@@ -54,7 +54,7 @@ repos:
         always_run: true
         verbose: true
 
-      - id: clean
-        name: clean
-        entry: make clean
-        language: system
+      # - id: clean
+      #   name: clean
+      #   entry: make clean
+      #   language: system
