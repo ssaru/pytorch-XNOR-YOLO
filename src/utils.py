@@ -1,9 +1,13 @@
+import json
 import logging
+import logging.config
 import operator
+import sys
 from functools import reduce
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
+import albumentations as A
 import numpy as np
 import torch
 import torchvision
@@ -14,12 +18,20 @@ from pytorch_lightning.callbacks import Callback, EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader, Dataset
 
-logging.basicConfig()
-logger = logging.getLogger(__name__)
+
+def make_logger(
+    name: Optional[str] = None, config_path: str = "conf/logger/logging.json"
+):
+    with Path(config_path).open("rt") as f:
+        config = json.load(f)
+
+    logging.config.dictConfig(config)
+    logger = logging.getLogger(name)
+
+    return logger
 
 
-class InitializationError(Exception):
-    pass
+logger = make_logger(name=__name__)
 
 
 def prod(iterable):
@@ -28,6 +40,10 @@ def prod(iterable):
 
 def build_model(model_conf: DictConfig):
     from src.model import net as Net
+
+    # logging
+    current_func_name = sys._getframe().f_code.co_name
+    logger.debug(f"{current_func_name} : {model_conf}")
 
     return load_class(
         module=Net, name=model_conf.type, args={"model_config": model_conf}
@@ -43,6 +59,11 @@ def get_next_version(root_dir: Path) -> str:
     Returns:
         str: folder name for saving
     """
+
+    # logging
+    current_func_name = sys._getframe().f_code.co_name
+    logger.debug(f"{current_func_name} : {root_dir}")
+
     version_prefix = "v"
     if not root_dir.exists():
         next_version = 0
@@ -63,6 +84,9 @@ def get_next_version(root_dir: Path) -> str:
 
 
 def get_config(hparams: Dict, options: List) -> DictConfig:
+    # logging
+    current_func_name = sys._getframe().f_code.co_name
+    logger.debug(f"{current_func_name} : hparams->{hparams}, options->{options}")
 
     config: DictConfig = OmegaConf.create()
 
@@ -76,6 +100,10 @@ def get_config(hparams: Dict, options: List) -> DictConfig:
 
 
 def get_log_dir(config: DictConfig) -> Path:
+    # logging
+    current_func_name = sys._getframe().f_code.co_name
+    logger.debug(f"{current_func_name} : config -> {config}")
+
     root_dir = Path(config.runner.experiments.output_dir) / Path(
         config.runner.experiments.project_name
     )
@@ -88,6 +116,10 @@ def get_log_dir(config: DictConfig) -> Path:
 def get_checkpoint_callback(
     log_dir: Path, config: DictConfig
 ) -> Union[Callback, List[Callback]]:
+    # logging
+    current_func_name = sys._getframe().f_code.co_name
+    logger.debug(f"{current_func_name} : log_dir->{log_dir}, config->{config}")
+
     checkpoint_prefix = f"{config.model.type}"
     checkpoint_suffix = (
         "_{epoch:02d}-{train_loss:.2f}-{val_loss:.2f}-{train_acc:.2f}-{val_acc:.2f}"
@@ -105,6 +137,10 @@ def get_checkpoint_callback(
 
 
 def get_wandb_logger(log_dir: Path, config: DictConfig) -> Tuple[WandbLogger]:
+    # logging
+    current_func_name = sys._getframe().f_code.co_name
+    logger.debug(f"{current_func_name} : log_dir->{log_dir}, config->{config}")
+
     next_version = str(log_dir.parts[-1])
     ids = log_dir.parts[-1]
     wandb_logger = WandbLogger(
@@ -120,6 +156,12 @@ def get_wandb_logger(log_dir: Path, config: DictConfig) -> Tuple[WandbLogger]:
 
 
 def get_early_stopper(early_stopping_config: DictConfig) -> EarlyStopping:
+    # logging
+    current_func_name = sys._getframe().f_code.co_name
+    logger.debug(
+        f"{current_func_name} : early_stopping_config->{early_stopping_config}"
+    )
+
     return EarlyStopping(
         min_delta=0.00,
         patience=early_stopping_config.patience,
@@ -129,40 +171,9 @@ def get_early_stopper(early_stopping_config: DictConfig) -> EarlyStopping:
     )
 
 
-def get_data_loaders(config: DictConfig) -> Tuple[DataLoader, DataLoader]:
-
-    args = dict(config.data.dataset.params)
-
-    args["train"] = True
-    args["transform"] = transforms.Compose([transforms.ToTensor()])
-    train_dataset = load_class(
-        module=torchvision.datasets, name=config.data.dataset.type, args=args
-    )
-
-    train_dataloader = DataLoader(
-        dataset=train_dataset,
-        batch_size=config.dataloader.params.batch_size,
-        num_workers=config.dataloader.params.num_workers,
-        drop_last=True,
-        shuffle=True,
-    )
-
-    args["train"] = False
-    test_dataset = load_class(
-        module=torchvision.datasets, name=config.data.dataset.type, args=args
-    )
-    test_dataloader = DataLoader(
-        dataset=test_dataset,
-        batch_size=config.dataloader.params.batch_size,
-        num_workers=config.dataloader.params.num_workers,
-        drop_last=False,
-        shuffle=False,
-    )
-    return train_dataloader, test_dataloader
-
-
 def load_class(module: Any, name: str, args: Dict):
-    logger.debug(
-        f"[utils.py - load_class] module: {module}, name: {name}, args: {args}"
-    )
+    # logging
+    current_func_name = sys._getframe().f_code.co_name
+    logger.debug(f"{current_func_name} : module->{module}, name->{name}, args->{args}")
+
     return getattr(module, name)(**args)

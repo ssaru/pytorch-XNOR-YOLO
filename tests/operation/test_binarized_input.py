@@ -33,7 +33,7 @@ input_transform_test_case = [
 
 
 @pytest.mark.parametrize("input, expected_value", input_transform_test_case)
-def test_transforms(fix_seed, input, expected_value):
+def test_binarized_with_scale_factor(fix_seed, input, expected_value):
     binarzied_input, scale_factor = BinarizeWithScaleFactor()(tensor=input)
     expected_binarized_input, expected_scale_factor = expected_value
 

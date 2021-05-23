@@ -40,14 +40,8 @@ from src.utils import (
     load_class,
 )
 
-# TODO. Hyperparameter search
-# Search space
-# Batch size: [32(ing), 64, 128, 256]
-# optimizer: [Adam, SGD, etc...]
-# lr : [1e-4(ing), 1e-3, 1e-2, 1e-1]
-# scheduler gamma: [0.1(ing), 0.2, 0.4, 0.6, 0.8, 0.9]
 
-
+# TODO. Augmentation 추가
 def train(hparams: dict):
     config_list = ["--dataset-config", "--model-config", "--runner-config"]
     config: DictConfig = get_config(hparams=hparams, options=config_list)

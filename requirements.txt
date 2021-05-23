@@ -1,7 +1,9 @@
+albumentations==0.5.2
 black==19.10b0
 isort==5.4.0
 numpy==1.19.0
 omegaconf==2.0.1rc11
+pillow==8.2.0
 pytest==6.2.1
 pytest-cov==2.10.1
 pytest_xdist==2.2.0

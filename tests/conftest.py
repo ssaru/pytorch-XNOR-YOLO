@@ -1,12 +1,14 @@
 import logging
+import shutil
 import sys
+import urllib.request
+from pathlib import Path
 
 import pytest
 import pytorch_lightning
 import torch
 
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+from src.utils import make_logger
 
 
 @pytest.fixture(autouse=True)
@@ -36,7 +38,77 @@ def capture_wrap():
 
 @pytest.fixture(scope="function")
 def fix_seed():
+    current_func_name = sys._getframe().f_code.co_name
+    logger = make_logger(name=current_func_name)
+    logger.debug("Fix SEED")
+
     pytorch_lightning.seed_everything(777)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    logger.debug("Fix SEED")
+
+
+@pytest.fixture(
+    params=[
+        (
+            "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/segexamples/images/01_thumb.jpg",
+            "01_thumb.jpg",
+            {
+                "annotation": {
+                    "folder": "VOC2012",
+                    "filename": "2008_000008.jpg",
+                    "source": {
+                        "database": "The VOC2008 Database",
+                        "annotation": "PASCAL VOC2008",
+                        "image": "flickr",
+                    },
+                    "size": {"width": "500", "height": "442", "depth": "3"},
+                    "segmented": "0",
+                    "object": [
+                        {
+                            "name": "horse",
+                            "pose": "Left",
+                            "truncated": "0",
+                            "occluded": "1",
+                            "bndbox": {
+                                "xmin": "53",
+                                "ymin": "87",
+                                "xmax": "471",
+                                "ymax": "420",
+                            },
+                            "difficult": "0",
+                        },
+                        {
+                            "name": "person",
+                            "pose": "Unspecified",
+                            "truncated": "1",
+                            "occluded": "0",
+                            "bndbox": {
+                                "xmin": "158",
+                                "ymin": "44",
+                                "xmax": "289",
+                                "ymax": "167",
+                            },
+                            "difficult": "0",
+                        },
+                    ],
+                }
+            },
+        )
+    ]
+)
+def ready_images(request):
+    current_func_name = sys._getframe().f_code.co_name
+    logger = make_logger(name=current_func_name)
+    logger.info(f"Set up. Download images...: {request.param}")
+
+    image_dir = Path("tests/data/images")
+
+    url, filename, target = request.param
+    filepath = image_dir / Path(filename)
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+
+    urllib.request.urlretrieve(url, str(filepath))
+
+    yield (filepath, target)
+
+    shutil.rmtree(filepath.parent)

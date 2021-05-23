@@ -8,9 +8,10 @@ import torch
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Trainer
 
+from src.data.dataloader import get_data_loaders
 from src.engine.train_jig import TrainingContainer
 from src.nn.binarized_conv2d import BinarizedConv2d
-from src.utils import build_model, get_config, get_data_loaders
+from src.utils import build_model, get_config
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

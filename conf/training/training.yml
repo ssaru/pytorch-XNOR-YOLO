@@ -11,7 +11,7 @@ experiments: &title 81.xnor_conv(deterministic)
 dataloader:
   type: DataLoader
   params:
-    num_workers: 48
+    num_workers: 10
     batch_size: *batch_size # 50 in paper
 
 scheduler: # ExponentialLR in paper

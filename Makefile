@@ -80,4 +80,5 @@ clean-test:
 	rm -rf .pytest_cache
 	rm -rf .mypy_cache
 	rm -rf tests/output
+	rm -rf *.log
 #################
