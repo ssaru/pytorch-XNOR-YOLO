@@ -3,7 +3,7 @@ name: Pytest & Build
 on:
   push:
     branches:
-      - master
+      - main
 
   schedule:
     # 이 크론잡은 평일 00:00시에 실행됩니다.
