@@ -81,4 +81,5 @@ clean-test:
 	rm -rf .mypy_cache
 	rm -rf tests/output
 	rm -rf *.log
+	rm -rf *.png
 #################
