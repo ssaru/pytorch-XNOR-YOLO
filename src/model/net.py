@@ -7,6 +7,7 @@ import torch.nn as nn
 from omegaconf import DictConfig
 from torchsummary import summary as torch_summary
 
+from src.data.pascal_voc import VOC2012
 from src.nn.binarized_conv2d import BinarizedConv2d
 from src.nn.binarized_linear import BinarizedLinear
 from src.utils import load_class, make_logger
@@ -155,33 +156,12 @@ class XnorNet(nn.Module):
     Refs: https://arxiv.org/pdf/1511.00363.pdf
     """
 
-    CLASS_MAP = {
-        0: "Aeroplane",
-        1: "Bicycle",
-        2: "Bird",
-        3: "Boat",
-        4: "Bottle",
-        5: "Bus",
-        6: "Car",
-        7: "Cat",
-        8: "Chair",
-        9: "Cow",
-        10: "Diningtable",
-        11: "Dog",
-        12: "Horse",
-        13: "Motorbike",
-        14: "Person",
-        15: "Pottedplant",
-        16: "Sheep",
-        17: "Sofa",
-        18: "Train",
-        19: "Tvmonitor",
-    }
-
     def __init__(self, model_config: DictConfig) -> None:
         super(XnorNet, self).__init__()
         self.logger = make_logger(name=str(__class__))
         self.logger.info(f"config: {model_config}, type: {type(model_config)}")
+
+        self.class_map = VOC2012()
 
         self._width: int = model_config.params.width
         self._height: int = model_config.params.height
@@ -232,7 +212,7 @@ class XnorNet(nn.Module):
         outputs = self.batch_inference(x)
         indices = int(outputs.indices.squeeze().numpy())
 
-        return self.CLASS_MAP[indices]
+        return self.class_map[indices]
 
     def summary(self):
         # torchsummary only supported [cuda, cpu]. not cuda:0
