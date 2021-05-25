@@ -1,58 +1,101 @@
+import sys
+
 import torch
 
+from src.utils import make_logger
 
-def yolo_loss(output: torch.Tensor, target: torch.Tensor):
-    # lambda_coord = 5
-    # lambda_noobj = 0.5
+logger = make_logger(name=__name__)
 
-    # # check batch size
-    # b, _, _, _ = target.shape
-    # _, _, _, n = output.shape
 
-    # # output tensor slice
-    # # output tensor shape is [batch, 7, 7, 5 + classes]
-    # objness1_output = output[:, :, :, 0]
-    # x_offset1_output = output[:, :, :, 1]
-    # y_offset1_output = output[:, :, :, 2]
-    # width_ratio1_output = output[:, :, :, 3]
-    # height_ratio1_output = output[:, :, :, 4]
-    # class_output = output[:, :, :, 5:]
+def calc_obj_loss(output: torch.Tensor, target: torch.Tensor) -> dict:
+    return {
+        "confidence1_loss": torch.sum(
+            torch.pow(output[:, :, :, 0] - target[:, :, :, 0], 2)
+        ),
+        "box1_cx_loss": torch.sum(
+            torch.pow(output[:, :, :, 1] - target[:, :, :, 1], 2)
+        ),
+        "box1_cy_loss": torch.sum(
+            torch.pow(output[:, :, :, 2] - target[:, :, :, 2], 2)
+        ),
+        "box1_width_loss": torch.sum(
+            torch.pow(output[:, :, :, 3] - torch.sqrt(target[:, :, :, 3]), 2)
+        ),
+        "box1_height_loss": torch.sum(
+            torch.pow(output[:, :, :, 4] - torch.sqrt(target[:, :, :, 4]), 2)
+        ),
+        "confidence2_loss": torch.sum(
+            torch.pow(output[:, :, :, 5] - target[:, :, :, 0], 2)
+        ),
+        "box2_cx_loss": torch.sum(
+            torch.pow(output[:, :, :, 6] - target[:, :, :, 1], 2)
+        ),
+        "box2_cy_loss": torch.sum(
+            torch.pow(output[:, :, :, 7] - target[:, :, :, 2], 2)
+        ),
+        "box2_width_loss": torch.sum(
+            torch.pow(output[:, :, :, 8] - torch.sqrt(target[:, :, :, 3]), 2)
+        ),
+        "box2_height_loss": torch.sum(
+            torch.pow(output[:, :, :, 9] - torch.sqrt(target[:, :, :, 4]), 2)
+        ),
+        "classes_loss": torch.sum(
+            torch.pow(output[:, :, :, 10:] - target[:, :, :, 5:], 2)
+        ),
+    }
 
-    # num_cls = class_output.shape[-1]
 
-    # # label tensor slice
-    # objness_label = target[:, :, :, 0]
-    # x_offset_label = target[:, :, :, 1]
-    # y_offset_label = target[:, :, :, 2]
-    # width_ratio_label = target[:, :, :, 3]
-    # height_ratio_label = target[:, :, :, 4]
-    # class_label = one_hot(class_output, target[:, :, :, 5], device)
+def calc_nonobj_loss(output: torch.Tensor, target: torch.Tensor) -> dict:
+    return {
+        "confidence1_loss": torch.sum(
+            torch.pow(output[:, :, :, 0] - target[:, :, :, 0], 2)
+        ),
+        "confidence2_loss": torch.sum(
+            torch.pow(output[:, :, :, 5] - target[:, :, :, 0], 2)
+        ),
+        "classes_loss": torch.sum(
+            torch.pow(output[:, :, :, 10:] - target[:, :, :, 5:], 2)
+        ),
+    }
 
-    # noobjness_label = torch.neg(torch.add(objness_label, -1))
 
-    # obj_coord1_loss = lambda_coord * \
-    #                   torch.sum(objness_label *
-    #                     (torch.pow(x_offset1_output - x_offset_label, 2) +
-    #                                 torch.pow(y_offset1_output - y_offset_label, 2)))
+def yolo_loss(output: torch.Tensor, target: torch.Tensor) -> dict:
+    """
+    output: (n1, 7, 7, 30)
+    label: (n2, 7, 7, 25), where n1==n2
 
-    # obj_size1_loss = lambda_coord * \
-    #                  torch.sum(objness_label *
-    #                            (torch.pow(width_ratio1_output - torch.sqrt(width_ratio_label), 2) +
-    #                             torch.pow(height_ratio1_output - torch.sqrt(height_ratio_label), 2)))
+    iou^{truth}_{pred} * Pr(Object)값이 왔다고 가정한다.
+    pred_width, pred_height값이 음수일 때, sqrt가 에러가 날 수 있으므로,
+    sqrt된 target값에 맞춰 학습하고, 추론할 때 pred-width와 pred-height를 제곱한다.
+    """
+    logger.info(f"shape of args: output-> {output.shape}, target -> {target.shape}")
+    lambda_obj = 5.0
+    lambda_noobj = 0.5
 
-    # objectness_cls_map = objness_label.unsqueeze(-1)
+    with torch.no_grad():
+        obj_mask = torch.stack([target[:, :, :, 0] for _ in range(30)], dim=3)
+        noobj_mask = torch.neg(obj_mask - 1)
 
-    # for i in range(num_cls - 1):
-    #     objectness_cls_map = torch.cat((objectness_cls_map, objness_label.unsqueeze(-1)), 3)
+    logger.info(
+        f"shape of obj_mask : {obj_mask.shape}, shape of noobj_mask: {noobj_mask.shape}"
+    )
+    obj_output_block = obj_mask * output
+    obj_target_block = obj_mask[:, :, :, :25] * target
+    nonobj_output_block = noobj_mask * output
+    nonobj_target_block = noobj_mask[:, :, :, :25] * target
 
-    # obj_class_loss = torch.sum(objectness_cls_map * torch.pow(class_output - class_label, 2))
+    logger.info(f"calculate each loss, obj and nonobj")
+    obj_loss_dict = calc_obj_loss(output=obj_output_block, target=obj_target_block)
+    nonobj_loss_dict = calc_nonobj_loss(
+        output=nonobj_output_block, target=nonobj_target_block
+    )
 
-    # noobjness1_loss = lambda_noobj * torch.sum(noobjness_label * torch.pow(objness1_output - objness_label, 2))
-    # objness1_loss = torch.sum(objness_label * torch.pow(objness1_output - objness_label, 2))
+    logger.info(f"obj_loss_dict : {obj_loss_dict}")
+    logger.info(f"nonobj_loss_dict: {nonobj_loss_dict}")
 
-    # total_loss = (obj_coord1_loss + obj_size1_loss + noobjness1_loss + objness1_loss + obj_class_loss)
-    # total_loss = total_loss / b
-
-    # return total_loss, obj_coord1_loss / b, obj_size1_loss / b, obj_class_loss / b, noobjness1_loss / b, objness1_loss / b
-
-    return True
+    return {
+        "lambda_obj": lambda_obj,
+        "lambda_noobj": lambda_noobj,
+        "obj_loss": obj_loss_dict,
+        "nonobj_loss": nonobj_loss_dict,
+    }
