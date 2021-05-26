@@ -23,9 +23,7 @@ mode_test_case = [
 ]
 
 
-@pytest.mark.parametrize(
-    "test_input, test_weight, test_bias, test_mode", mode_test_case
-)
+@pytest.mark.parametrize("test_input, test_weight, test_bias, test_mode", mode_test_case)
 def test_supported_mode(fix_seed, test_input, test_weight, test_bias, test_mode):
     with pytest.raises(RuntimeError):
         binarized_conv2d(test_input, test_weight, test_bias, 1, 0, 1, 1, test_mode)
@@ -64,9 +62,7 @@ forward_test_case = [
 ]
 
 
-@pytest.mark.parametrize(
-    "test_input, test_weight, test_bias, test_mode, expected", forward_test_case
-)
+@pytest.mark.parametrize("test_input, test_weight, test_bias, test_mode, expected", forward_test_case)
 def test_forward(fix_seed, test_input, test_weight, test_bias, test_mode, expected):
 
     answer = binarized_conv2d(test_input, test_weight, test_bias, 1, 0, 1, 1, test_mode)
@@ -87,9 +83,7 @@ def test_forward(fix_seed, test_input, test_weight, test_bias, test_mode, expect
 indirectly_backward_test_case = [
     # (test_input, test_weight, test_bias, test_mode, expected_weight_grad, expected_input_grad)
     (
-        torch.tensor(
-            [[[[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]]], requires_grad=True
-        ),
+        torch.tensor([[[[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]]], requires_grad=True),
         torch.tensor(
             [[[[-1.0, 1.0, 1.0], [1.0, -0.8, 1.0], [1.0, -0.3, 1.0]]]],
             requires_grad=True,
@@ -100,9 +94,7 @@ indirectly_backward_test_case = [
         torch.tensor([[[[-0.9, 0.9, 0.9], [0.9, -0.9, 0.9], [0.9, -0.9, 0.9]]]]),
     ),
     (
-        torch.tensor(
-            [[[[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]]], requires_grad=True
-        ),
+        torch.tensor([[[[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]]], requires_grad=True),
         torch.tensor(
             [[[[-1.0, 1.0, 1.0], [1.0, -0.8, 1.0], [1.0, -0.3, 1.0]]]],
             requires_grad=True,
@@ -113,9 +105,7 @@ indirectly_backward_test_case = [
         torch.tensor([[[[-0.9, 0.9, 0.9], [0.9, -0.9, 0.9], [0.9, -0.9, 0.9]]]]),
     ),
     (
-        torch.tensor(
-            [[[[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]]], requires_grad=True
-        ),
+        torch.tensor([[[[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]]], requires_grad=True),
         torch.tensor(
             [[[[-1.0, 1.0, 1.0], [1.0, -0.8, 1.0], [1.0, -0.3, 1.0]]]],
             requires_grad=True,
@@ -136,9 +126,7 @@ indirectly_backward_test_case = [
         ),
     ),
     (
-        torch.tensor(
-            [[[[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]]], requires_grad=True
-        ),
+        torch.tensor([[[[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]]], requires_grad=True),
         torch.tensor(
             [[[[-1.0, 1.0, 1.0], [1.0, -0.8, 1.0], [1.0, -0.3, 1.0]]]],
             requires_grad=True,
@@ -175,9 +163,7 @@ def test_backward_indirectly(
     expected_input_grad,
 ):
 
-    binarized_conv2d(
-        test_input, test_weight, test_bias, 1, 0, 1, 1, test_mode
-    ).backward()
+    binarized_conv2d(test_input, test_weight, test_bias, 1, 0, 1, 1, test_mode).backward()
 
     logger.info(f"input grad : {test_input.grad}")
     logger.info(f"expected input grad : {expected_input_grad}")
@@ -247,9 +233,7 @@ def test_backward_directly(
 
     ctx = CTX(saved_tensors, needs_input_grad)
 
-    input_grad, weight_grad, bias_grad, _, _, _, _, _ = BinarizedConv2d.backward(
-        ctx, grad_output
-    )
+    input_grad, weight_grad, bias_grad, _, _, _, _, _ = BinarizedConv2d.backward(ctx, grad_output)
 
     assert torch.allclose(
         input=input_grad,

@@ -7,9 +7,7 @@ from omegaconf import OmegaConf
 from src.data.dataloader import get_data_loaders
 from src.utils import make_logger
 
-dataloader_testcase = [
-    (OmegaConf.load("conf/data/data.yml"), OmegaConf.load("conf/training/training.yml"))
-]
+dataloader_testcase = [(OmegaConf.load("conf/data/data.yml"), OmegaConf.load("conf/training/training.yml"))]
 
 
 @pytest.mark.parametrize("data_config, training_config", dataloader_testcase)
@@ -39,12 +37,8 @@ def test_dataloader(data_config, training_config):
     train_image, train_target = train_dataset.__getitem__(0)
     test_image, test_target = test_dataset.__getitem__(0)
 
-    logger.info(
-        f"image : {type(train_image)}:{train_image}, target: {type(train_target)}{train_target}"
-    )
-    logger.info(
-        f"image : {type(test_image)}:{test_image}, target: {type(test_target)}{test_target}"
-    )
+    logger.info(f"image : {type(train_image)}:{train_image}, target: {type(train_target)}{train_target}")
+    logger.info(f"image : {type(test_image)}:{test_image}, target: {type(test_target)}{test_target}")
 
     assert isinstance(train_image, torch.Tensor)
     assert isinstance(train_target, torch.Tensor)

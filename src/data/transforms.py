@@ -19,15 +19,9 @@ def xyxyabs_to_xywhrel(
     current_func_name = sys._getframe().f_code.co_name
     logger = make_logger(name=current_func_name)
 
-    is_boxes_numpy, is_image_sizes_numpy = isinstance(boxes, np.ndarray), isinstance(
-        image_sizes, np.ndarray
-    )
-    is_boxes_torch, is_image_sizes_torch = isinstance(boxes, torch.Tensor), isinstance(
-        image_sizes, torch.Tensor
-    )
-    is_boxes_list, is_image_sizes_list = isinstance(boxes, list), isinstance(
-        image_sizes, list
-    )
+    is_boxes_numpy, is_image_sizes_numpy = isinstance(boxes, np.ndarray), isinstance(image_sizes, np.ndarray)
+    is_boxes_torch, is_image_sizes_torch = isinstance(boxes, torch.Tensor), isinstance(image_sizes, torch.Tensor)
+    is_boxes_list, is_image_sizes_list = isinstance(boxes, list), isinstance(image_sizes, list)
     logger.info(f"boxes type: {type(boxes)}, image_sizes type: {type(image_sizes)}")
 
     if is_boxes_numpy or is_boxes_list:
@@ -119,12 +113,8 @@ def build_label_tensor(xywhrel_boxes: torch.Tensor):
             f"obj_cell_x: {obj_cell_x}, obj_cell_y: {obj_cell_y}, x_shift: {x_shift}, y_shift: {y_shift}, coord_label: {coord_label}"
         )
 
-        label_tensor[obj_cell_y][obj_cell_x][0:10] = torch.tensor(
-            [*coord_label, *coord_label]
-        )
-        label_tensor[obj_cell_y][obj_cell_x][10:] = torch.tensor(
-            [*xywhrel_boxes[i][4:]]
-        )
+        label_tensor[obj_cell_y][obj_cell_x][0:10] = torch.tensor([*coord_label, *coord_label])
+        label_tensor[obj_cell_y][obj_cell_x][10:] = torch.tensor([*xywhrel_boxes[i][4:]])
 
     logger.info(f"generated label_tensor: {label_tensor.shape}:{label_tensor}")
 
@@ -147,9 +137,7 @@ class Yolofy(object):
         image_width = target.annotation.size.width
         image_height = target.annotation.size.height
 
-        self.logger.info(
-            f"object info : {type(target.annotation.object)}:{target.annotation.object}"
-        )
+        self.logger.info(f"object info : {type(target.annotation.object)}:{target.annotation.object}")
         ans_target = []
         for object_info in target.annotation.object:
             cls_idx = torch.tensor(self._voc2012[str(object_info.name)])
@@ -162,17 +150,11 @@ class Yolofy(object):
             ymax = object_info.bndbox.ymax
             ans_target.append([xmin, ymin, xmax, ymax, *cls_onehot_vector])
 
-        xywhrel_boxes = xyxyabs_to_xywhrel(
-            boxes=ans_target, image_sizes=[image_width, image_height]
-        )
+        xywhrel_boxes = xyxyabs_to_xywhrel(boxes=ans_target, image_sizes=[image_width, image_height])
         ans_target = build_label_tensor(xywhrel_boxes=xywhrel_boxes)
         ans_image = self._to_tensor(image)
 
-        self.logger.info(
-            f"ans image info : {type(ans_image)}, {ans_image.shape}:{ans_image}"
-        )
-        self.logger.info(
-            f"ans target info : {type(ans_target)}, {ans_target.shape}:{ans_target}"
-        )
+        self.logger.info(f"ans image info : {type(ans_image)}, {ans_image.shape}:{ans_image}")
+        self.logger.info(f"ans target info : {type(ans_target)}, {ans_target.shape}:{ans_target}")
 
         return ans_image, ans_target

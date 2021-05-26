@@ -54,9 +54,7 @@ test_pairwise_iou_testcase = [
 ]
 
 
-@pytest.mark.parametrize(
-    "pred_boxes, target_boxes, expected", test_pairwise_iou_testcase
-)
+@pytest.mark.parametrize("pred_boxes, target_boxes, expected", test_pairwise_iou_testcase)
 def test_pairwise_iou(pred_boxes, target_boxes, expected):
 
     ious = pairwise_iou(pred_boxes=pred_boxes, target_boxes=target_boxes)
@@ -99,9 +97,7 @@ test_yolotensor_to_xyxyabs_testcase = [
 ]
 
 
-@pytest.mark.parametrize(
-    "output_info, expected_info", test_yolotensor_to_xyxyabs_testcase
-)
+@pytest.mark.parametrize("output_info, expected_info", test_yolotensor_to_xyxyabs_testcase)
 def test_yolotensor_to_xyxyabs(output_info, expected_info):
     x, y = output_info[0]
     expected_box1 = torch.tensor(expected_info[1][1:])
@@ -114,13 +110,9 @@ def test_yolotensor_to_xyxyabs(output_info, expected_info):
     output_dummy[0, y, x, :] = output_obj_block
     logger.info(f"shape of output: {output_dummy.shape}")
 
-    logger.info(
-        f"output block of specific indexes: {type(output_dummy[0, y, x, :])}{output_dummy[0, y, x, :]}"
-    )
+    logger.info(f"output block of specific indexes: {type(output_dummy[0, y, x, :])}{output_dummy[0, y, x, :]}")
 
-    boxes = yolotensor_to_xyxyabs(
-        yolo_coord_output=output_dummy, image_sizes=image_sizes
-    )
+    boxes = yolotensor_to_xyxyabs(yolo_coord_output=output_dummy, image_sizes=image_sizes)
     logger.info(f"output of specific indexes: {boxes}")
 
     expected_idx, expected_ys, expected_xs = expected_info[0]

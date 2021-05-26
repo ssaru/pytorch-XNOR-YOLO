@@ -58,18 +58,14 @@ def train(hparams: dict):
     train_dataloader, test_dataloader = get_data_loaders(config=config)
 
     model: nn.Module = build_model(model_conf=config.model)
-    training_container: pl.LightningModule = TrainingContainer(
-        model=model, config=config
-    )
+    training_container: pl.LightningModule = TrainingContainer(model=model, config=config)
 
     checkpoint_callback = get_checkpoint_callback(log_dir=log_dir, config=config)
     wandb_logger = get_wandb_logger(log_dir=log_dir, config=config)
     wandb_logger.watch(model, log="gradients", log_freq=100)
 
     lr_logger = LearningRateMonitor()
-    early_stop_callback = get_early_stopper(
-        early_stopping_config=config.runner.earlystopping.params
-    )
+    early_stop_callback = get_early_stopper(early_stopping_config=config.runner.earlystopping.params)
 
     with (log_dir / Path("config.yaml")).open("w") as f:
         OmegaConf.save(config=config, f=f)

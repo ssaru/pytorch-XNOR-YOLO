@@ -94,11 +94,7 @@ class BinarizedConv2d(torch.autograd.Function):
                 logger.debug(f"device of weight: {weight.device}")
                 logger.debug(f"device of binarized weight: {binarized_weight.device}")
 
-                s = torch.sum(
-                    torch.matmul(
-                        torch.transpose(weight, dim0=2, dim1=3), binarized_weight
-                    )
-                )
+                s = torch.sum(torch.matmul(torch.transpose(weight, dim0=2, dim1=3), binarized_weight))
                 n = prod(weight.shape)
                 weight_scale_factor = s / n
             else:
@@ -111,9 +107,7 @@ class BinarizedConv2d(torch.autograd.Function):
         binarized_weight = binarized_weight.to(device)
 
         with torch.no_grad():
-            output = F.conv2d(
-                input, binarized_weight, bias, stride, padding, dilation, groups
-            )
+            output = F.conv2d(input, binarized_weight, bias, stride, padding, dilation, groups)
             output = output * weight_scale_factor
 
         # Save input, binarized weight, bias in context object

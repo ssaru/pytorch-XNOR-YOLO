@@ -26,9 +26,7 @@ class BinarizedLinearBlock(nn.Module):
     ) -> None:
         super(BinarizedLinearBlock, self).__init__()
         self.logger = make_logger(name=str(__class__))
-        self.binarized_linear = BinarizedLinear(
-            in_features=in_feature, out_features=out_feature, bias=bias, mode=mode
-        )
+        self.binarized_linear = BinarizedLinear(in_features=in_feature, out_features=out_feature, bias=bias, mode=mode)
 
         self.batch_norm = batch_norm
         if self.batch_norm:
@@ -112,9 +110,7 @@ class BinarizedConvBlock(nn.Module):
     def forward(self, x):
         self.logger.warning(f"x shape : {x.shape}")
         if self.batch_norm:
-            self.logger.warning(
-                f"num feature in batchnorm: {self.batch_norm.num_features}"
-            )
+            self.logger.warning(f"num feature in batchnorm: {self.batch_norm.num_features}")
             x = self.batch_norm(x)
 
         x = self.binarized_conv(x)
@@ -129,15 +125,11 @@ class BinarizedConvBlock(nn.Module):
 
 
 def _build_conv_layers(conv_layers_config):
-    return nn.ModuleList(
-        [BinarizedConvBlock(**params) for params in conv_layers_config]
-    )
+    return nn.ModuleList([BinarizedConvBlock(**params) for params in conv_layers_config])
 
 
 def _build_linear_layers(linear_layers_config):
-    return nn.ModuleList(
-        [BinarizedLinearBlock(**params) for params in linear_layers_config]
-    )
+    return nn.ModuleList([BinarizedLinearBlock(**params) for params in linear_layers_config])
 
 
 class XnorNet(nn.Module):
@@ -172,9 +164,7 @@ class XnorNet(nn.Module):
         self.in_channels: int = self._channels
 
         self.logger.info(f"build conv layers")
-        self.conv_layers: nn.ModuleList = _build_conv_layers(
-            conv_layers_config=model_config.params.feature_layers.conv
-        )
+        self.conv_layers: nn.ModuleList = _build_conv_layers(conv_layers_config=model_config.params.feature_layers.conv)
 
         self.logger.info(f"build linear layers")
         if model_config.params.feature_layers.linear:
@@ -231,13 +221,7 @@ class XnorNet(nn.Module):
 
     @property
     def device(self):
-        devices = {param.device for param in self.parameters()} | {
-            buf.device for buf in self.buffers()
-        }
+        devices = {param.device for param in self.parameters()} | {buf.device for buf in self.buffers()}
         if len(devices) != 1:
-            raise RuntimeError(
-                "Cannot determine device: {} different devices found".format(
-                    len(devices)
-                )
-            )
+            raise RuntimeError("Cannot determine device: {} different devices found".format(len(devices)))
         return next(iter(devices))

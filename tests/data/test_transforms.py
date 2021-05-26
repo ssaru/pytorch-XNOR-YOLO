@@ -28,9 +28,7 @@ def test_transforms(ready_images):
     assert target.shape == (7, 7, 30)
 
 
-xyxyabs_testcase = [
-    ([10, 10, 50, 100], [300, 300], torch.tensor([0.1, 0.1833, 0.1333, 0.3]))
-]
+xyxyabs_testcase = [([10, 10, 50, 100], [300, 300], torch.tensor([0.1, 0.1833, 0.1333, 0.3]))]
 
 
 @pytest.mark.parametrize("xyxyabs_boxes, image_sizes, expected_boxes", xyxyabs_testcase)
@@ -38,9 +36,7 @@ def test_xyxyabs_to_xywhrel(xyxyabs_boxes, image_sizes, expected_boxes):
     current_func_name = sys._getframe().f_code.co_name
     logger = make_logger(name=current_func_name)
 
-    logger.info(
-        f"args: xyxyabs_boxes->{xyxyabs_boxes}, image_sizes->{image_sizes}, expected_boxes->{expected_boxes}"
-    )
+    logger.info(f"args: xyxyabs_boxes->{xyxyabs_boxes}, image_sizes->{image_sizes}, expected_boxes->{expected_boxes}")
     ans_boxes = xyxyabs_to_xywhrel(boxes=xyxyabs_boxes, image_sizes=image_sizes)
     logger.info(f"ans_boxes->{ans_boxes}, expected_boxes->{expected_boxes}")
 
@@ -106,21 +102,13 @@ def test_build_label_tensor(xywhrel_boxes):
         int(xywhrel_boxes[0][1] // dy),
     )
 
-    expected_label_tensor[obj_cell_y][obj_cell_x][0:10] = torch.tensor(
-        [*coord_label, *coord_label]
-    )
-    expected_label_tensor[obj_cell_y][obj_cell_x][10:] = torch.tensor(
-        [*xywhrel_boxes[0][4:]]
-    )
-    logger.info(
-        f"expected_label_tensor: {expected_label_tensor.shape}:{expected_label_tensor[obj_cell_y][obj_cell_x]}"
-    )
+    expected_label_tensor[obj_cell_y][obj_cell_x][0:10] = torch.tensor([*coord_label, *coord_label])
+    expected_label_tensor[obj_cell_y][obj_cell_x][10:] = torch.tensor([*xywhrel_boxes[0][4:]])
+    logger.info(f"expected_label_tensor: {expected_label_tensor.shape}:{expected_label_tensor[obj_cell_y][obj_cell_x]}")
 
     label_tensor = build_label_tensor(xywhrel_boxes=xywhrel_boxes)
 
-    logger.info(
-        f"label tensor: {label_tensor.shape}: {label_tensor[obj_cell_y][obj_cell_x]}"
-    )
+    logger.info(f"label tensor: {label_tensor.shape}: {label_tensor[obj_cell_y][obj_cell_x]}")
 
     assert label_tensor.shape == (7, 7, 30)
     assert torch.allclose(label_tensor, expected_label_tensor, rtol=1e-04, atol=1e-04)

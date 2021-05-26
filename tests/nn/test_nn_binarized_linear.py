@@ -45,9 +45,7 @@ forward_test_case = [
 ]
 
 
-@pytest.mark.parametrize(
-    "device, test_input, test_bias, test_mode, exptected_shape", forward_test_case
-)
+@pytest.mark.parametrize("device, test_input, test_bias, test_mode, exptected_shape", forward_test_case)
 def test_forward(fix_seed, device, test_input, test_bias, test_mode, exptected_shape):
     test_input = test_input.to(device)
     model = BinarizedLinear(10, 20, bias=test_bias, mode=test_mode).to(device)

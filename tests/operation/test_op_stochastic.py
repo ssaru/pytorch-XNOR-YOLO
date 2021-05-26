@@ -18,9 +18,7 @@ stochastic_quantize_test_case = [
 ]
 
 
-@pytest.mark.parametrize(
-    "num_iters, test_weight, expected_value", stochastic_quantize_test_case
-)
+@pytest.mark.parametrize("num_iters, test_weight, expected_value", stochastic_quantize_test_case)
 def test_stochastic_quantize(num_iters, test_weight, expected_value):
     # 1. -1과 1을 ``sigmoid(0.0001)=0.5=50%``확률로 뽑는다.
     # 2. 뽑은 모든 값을 더한다.
@@ -40,6 +38,4 @@ def test_stochastic_quantize(num_iters, test_weight, expected_value):
     logger.debug(f"average value: {s}")
     logger.debug(f"expected value: {expected_value}")
 
-    assert torch.allclose(
-        input=s, other=expected_value, rtol=1e-01, atol=1e-01, equal_nan=True
-    )
+    assert torch.allclose(input=s, other=expected_value, rtol=1e-01, atol=1e-01, equal_nan=True)

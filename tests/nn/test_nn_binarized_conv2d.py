@@ -50,9 +50,7 @@ forward_test_case = [
 ]
 
 
-@pytest.mark.parametrize(
-    "device, test_input, test_bias, test_mode, exptected_shape", forward_test_case
-)
+@pytest.mark.parametrize("device, test_input, test_bias, test_mode, exptected_shape", forward_test_case)
 def test_foward(fix_seed, device, test_input, test_bias, test_mode, exptected_shape):
     test_input = test_input.to(device)
     model = BinarizedConv2d(

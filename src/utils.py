@@ -19,9 +19,7 @@ from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader, Dataset
 
 
-def make_logger(
-    name: Optional[str] = None, config_path: str = "conf/logger/logging.json"
-):
+def make_logger(name: Optional[str] = None, config_path: str = "conf/logger/logging.json"):
     with Path(config_path).open("rt") as f:
         config = json.load(f)
 
@@ -45,9 +43,7 @@ def build_model(model_conf: DictConfig):
     current_func_name = sys._getframe().f_code.co_name
     logger.debug(f"{current_func_name} : {model_conf}")
 
-    return load_class(
-        module=Net, name=model_conf.type, args={"model_config": model_conf}
-    )
+    return load_class(module=Net, name=model_conf.type, args={"model_config": model_conf})
 
 
 def get_next_version(root_dir: Path) -> str:
@@ -104,26 +100,20 @@ def get_log_dir(config: DictConfig) -> Path:
     current_func_name = sys._getframe().f_code.co_name
     logger.debug(f"{current_func_name} : config -> {config}")
 
-    root_dir = Path(config.runner.experiments.output_dir) / Path(
-        config.runner.experiments.project_name
-    )
+    root_dir = Path(config.runner.experiments.output_dir) / Path(config.runner.experiments.project_name)
     next_version = get_next_version(root_dir)
     run_dir = root_dir.joinpath(next_version)
 
     return run_dir
 
 
-def get_checkpoint_callback(
-    log_dir: Path, config: DictConfig
-) -> Union[Callback, List[Callback]]:
+def get_checkpoint_callback(log_dir: Path, config: DictConfig) -> Union[Callback, List[Callback]]:
     # logging
     current_func_name = sys._getframe().f_code.co_name
     logger.debug(f"{current_func_name} : log_dir->{log_dir}, config->{config}")
 
     checkpoint_prefix = f"{config.model.type}"
-    checkpoint_suffix = (
-        "_{epoch:02d}-{train_loss:.2f}-{val_loss:.2f}-{train_acc:.2f}-{val_acc:.2f}"
-    )
+    checkpoint_suffix = "_{epoch:02d}-{train_loss:.2f}-{val_loss:.2f}-{train_acc:.2f}-{val_acc:.2f}"
 
     checkpoint_path = log_dir.joinpath(checkpoint_prefix + checkpoint_suffix)
     checkpoint_callback = ModelCheckpoint(
@@ -158,9 +148,7 @@ def get_wandb_logger(log_dir: Path, config: DictConfig) -> Tuple[WandbLogger]:
 def get_early_stopper(early_stopping_config: DictConfig) -> EarlyStopping:
     # logging
     current_func_name = sys._getframe().f_code.co_name
-    logger.debug(
-        f"{current_func_name} : early_stopping_config->{early_stopping_config}"
-    )
+    logger.debug(f"{current_func_name} : early_stopping_config->{early_stopping_config}")
 
     return EarlyStopping(
         min_delta=0.00,
