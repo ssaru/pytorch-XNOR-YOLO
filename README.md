@@ -3,6 +3,9 @@
 [![Code Coverage](https://codecov.io/gh/HephaestusProject/template/branch/master/graph/badge.svg)](https://codecov.io/gh/HephaestusProject/template)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+- [ ] output layer 구현(confidence에 iou * Pr(object)를 반영)
+- [ ] NMS 구현
+
 ## Abstract
 
 * abstract의 내용을 넣어주세요.
