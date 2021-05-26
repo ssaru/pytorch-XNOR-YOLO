@@ -40,7 +40,7 @@ def calc_obj_loss(output: torch.Tensor, target: torch.Tensor) -> dict:
             torch.pow(output[:, :, :, 9] - torch.sqrt(target[:, :, :, 4]), 2)
         ),
         "classes_loss": torch.sum(
-            torch.pow(output[:, :, :, 10:] - target[:, :, :, 5:], 2)
+            torch.pow(output[:, :, :, 10:] - target[:, :, :, 10:], 2)
         ),
     }
 
@@ -54,7 +54,7 @@ def calc_nonobj_loss(output: torch.Tensor, target: torch.Tensor) -> dict:
             torch.pow(output[:, :, :, 5] - target[:, :, :, 0], 2)
         ),
         "classes_loss": torch.sum(
-            torch.pow(output[:, :, :, 10:] - target[:, :, :, 5:], 2)
+            torch.pow(output[:, :, :, 10:] - target[:, :, :, 10:], 2)
         ),
     }
 
@@ -62,7 +62,7 @@ def calc_nonobj_loss(output: torch.Tensor, target: torch.Tensor) -> dict:
 def yolo_loss(output: torch.Tensor, target: torch.Tensor) -> dict:
     """
     output: (n1, 7, 7, 30)
-    label: (n2, 7, 7, 25), where n1==n2
+    label: (n2, 7, 7, 30), where n1==n2
 
     iou^{truth}_{pred} * Pr(Object)값이 왔다고 가정한다.
     pred_width, pred_height값이 음수일 때, sqrt가 에러가 날 수 있으므로,
@@ -80,9 +80,9 @@ def yolo_loss(output: torch.Tensor, target: torch.Tensor) -> dict:
         f"shape of obj_mask : {obj_mask.shape}, shape of noobj_mask: {noobj_mask.shape}"
     )
     obj_output_block = obj_mask * output
-    obj_target_block = obj_mask[:, :, :, :25] * target
+    obj_target_block = obj_mask * target
     nonobj_output_block = noobj_mask * output
-    nonobj_target_block = noobj_mask[:, :, :, :25] * target
+    nonobj_target_block = noobj_mask * target
 
     logger.info(f"calculate each loss, obj and nonobj")
     obj_loss_dict = calc_obj_loss(output=obj_output_block, target=obj_target_block)

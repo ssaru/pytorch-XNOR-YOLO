@@ -19,6 +19,11 @@ test_yololoss_testcase = [
                 0.01,
                 0.10,
                 0.10,
+                1,
+                0.01,
+                0.01,
+                0.10,
+                0.10,
                 *F.one_hot(torch.tensor(2), 20).tolist(),
             ],
         ),
@@ -45,7 +50,7 @@ test_yololoss_testcase = [
 @pytest.mark.parametrize("target_info, output_info", test_yololoss_testcase)
 def test_yolo_loss(target_info, output_info):
 
-    target_dummy = torch.zeros((1, 7, 7, 25), dtype=torch.float32)
+    target_dummy = torch.zeros((1, 7, 7, 30), dtype=torch.float32)
     output_dummy = torch.zeros((1, 7, 7, 30), dtype=torch.float32)
 
     x, y = target_info[0]

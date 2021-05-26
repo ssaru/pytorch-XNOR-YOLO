@@ -8,6 +8,7 @@ from omegaconf import DictConfig
 from torchsummary import summary as torch_summary
 
 from src.data.pascal_voc import VOC2012
+from src.model.detection_loss import yolo_loss
 from src.nn.binarized_conv2d import BinarizedConv2d
 from src.nn.binarized_linear import BinarizedLinear
 from src.utils import load_class, make_logger
@@ -181,10 +182,15 @@ class XnorNet(nn.Module):
                 linear_layers_config=model_config.params.feature_layers.linear
             )
 
+        # TODO. Output layer를 추가해야함.
+        # Output layer의 목적은
+        # 1. (n,7,7,30) output tensorblock에 sigmoid처리
+        # 2. confidence = iou * Pr(object) 처리
+        self.output_layer = None
+
         self.logger.info(f"build loss layers")
-        # TODO. YOLO Loss를 추가해야함
         self.softmax = nn.Softmax(dim=1)
-        self.loss_fn = nn.CrossEntropyLoss()
+        self.loss_fn = yolo_loss
 
     def forward(self, x):
         if self.conv_layers:
