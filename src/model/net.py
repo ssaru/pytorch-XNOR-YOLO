@@ -13,6 +13,8 @@ from src.nn.binarized_conv2d import BinarizedConv2d
 from src.nn.binarized_linear import BinarizedLinear
 from src.utils import load_class, make_logger
 
+logger = make_logger(name=str(__name__))
+
 
 class BinarizedLinearBlock(nn.Module):
     def __init__(
@@ -25,7 +27,7 @@ class BinarizedLinearBlock(nn.Module):
         mode: str = "stochastic",
     ) -> None:
         super(BinarizedLinearBlock, self).__init__()
-        self.logger = make_logger(name=str(__class__))
+
         self.binarized_linear = BinarizedLinear(in_features=in_feature, out_features=out_feature, bias=bias, mode=mode)
 
         self.batch_norm = batch_norm
@@ -66,7 +68,6 @@ class BinarizedConvBlock(nn.Module):
         mode: str = "stochastic",
     ) -> None:
         super(BinarizedConvBlock, self).__init__()
-        self.logger = make_logger(name=str(__class__))
 
         self.binarized_conv = BinarizedConv2d(
             in_channels=in_channels,
@@ -108,9 +109,9 @@ class BinarizedConvBlock(nn.Module):
             self.pool = getattr(nn, pool_dict["type"])(**pool_dict["args"])
 
     def forward(self, x):
-        self.logger.warning(f"x shape : {x.shape}")
+        logger.warning(f"x shape : {x.shape}")
         if self.batch_norm:
-            self.logger.warning(f"num feature in batchnorm: {self.batch_norm.num_features}")
+            logger.warning(f"num feature in batchnorm: {self.batch_norm.num_features}")
             x = self.batch_norm(x)
 
         x = self.binarized_conv(x)
@@ -132,27 +133,10 @@ def _build_linear_layers(linear_layers_config):
     return nn.ModuleList([BinarizedLinearBlock(**params) for params in linear_layers_config])
 
 
-class XnorNet(nn.Module):
-    """rWe preprocess the data using global contrast normalization and ZCA whitening.
-    We do not use any data-augmentation
-
-    The architecture of our CNN is:
-    (2×128C3)−MP2−(2×256C3)−MP2−(2×512C3)−MP2−(2×1024FC)−10SV M (5)
-
-    Where C3 is a 3 × 3 ReLU convolution layer, MP2 is a 2 × 2 max-pooling layer, FC a fully
-    connected layer, and SVM a L2-SVM output layer.
-
-    The square hinge loss is minimized with ADAM.
-    We use an exponentially decaying learning rate.
-    We use Batch Normalization with a minibatch of size 50 to speed up the training
-
-    Refs: https://arxiv.org/pdf/1511.00363.pdf
-    """
-
+class XnorNetYolo(nn.Module):
     def __init__(self, model_config: DictConfig) -> None:
-        super(XnorNet, self).__init__()
-        self.logger = make_logger(name=str(__class__))
-        self.logger.info(f"config: {model_config}, type: {type(model_config)}")
+        super(XnorNetYolo, self).__init__()
+        logger.info(f"config: {model_config}, type: {type(model_config)}")
 
         self.class_map = VOC2012()
 
@@ -163,29 +147,27 @@ class XnorNet(nn.Module):
         self.input_shape: tuple = (self._channels, self._height, self._width)
         self.in_channels: int = self._channels
 
-        self.logger.info(f"build conv layers")
-        self.conv_layers: nn.ModuleList = _build_conv_layers(conv_layers_config=model_config.params.feature_layers.conv)
+        logger.info(f"build conv layers")
+        if model_config.params.feature_layers.conv:
+            self.conv_layers: nn.ModuleList = _build_conv_layers(
+                conv_layers_config=model_config.params.feature_layers.conv
+            )
 
-        self.logger.info(f"build linear layers")
+        logger.info(f"build linear layers")
         if model_config.params.feature_layers.linear:
             self.linear_layers: nn.ModuleList = _build_linear_layers(
                 linear_layers_config=model_config.params.feature_layers.linear
             )
 
-        # TODO. Output layer를 추가해야함.
-        # Output layer의 목적은
-        # 1. (n,7,7,30) output tensorblock에 sigmoid처리
-        # 2. confidence = iou * Pr(object) 처리
-        self.output_layer = None
-
-        self.logger.info(f"build loss layers")
+        logger.info(f"build loss layers")
         self.softmax = nn.Softmax(dim=1)
         self.loss_fn = yolo_loss
 
     def forward(self, x):
-        if self.conv_layers:
-            for conv_layer in self.conv_layers:
-                x = conv_layer(x)
+        if hasattr(self, "linear_layers"):
+            if self.conv_layers:
+                for conv_layer in self.conv_layers:
+                    x = conv_layer(x)
 
         x = x.view(x.size()[0], -1)
 
@@ -193,22 +175,22 @@ class XnorNet(nn.Module):
             for linear_layer in self.linear_layers:
                 x = linear_layer(x)
 
+        x = x.view(-1, 7, 7, 30)
+
         return x
 
-    def loss(self, x, y):
-        return self.loss_fn(x, y)
+    def loss(self, pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: torch.Tensor):
+        return self.loss_fn(pred_tensor=pred_tensor, target_tensor=target_tensor, image_sizes=image_sizes)
 
-    def batch_inference(self, x: torch.Tensor):
-        outputs = self.forward(x)
-        outputs = self.softmax(outputs)
-        outputs = outputs.to("cpu")
-        return torch.topk(outputs, 1)
-
-    def single_inference(self, x: torch.Tensor):
+    def inference(self, x: torch.Tensor):
         outputs = self.batch_inference(x)
-        indices = int(outputs.indices.squeeze().numpy())
+        # TODO. batch processing을 염두에 두어야함
+        detection_boxes = self.post_processing(x=outputs)
 
-        return self.class_map[indices]
+        return detection_boxes
+
+    def post_processing(self, x: torch.Tensor):
+        raise NotImplementedError()
 
     def summary(self):
         # torchsummary only supported [cuda, cpu]. not cuda:0

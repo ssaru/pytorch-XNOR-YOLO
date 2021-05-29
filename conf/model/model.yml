@@ -1,5 +1,5 @@
 model:
-  type: XnorNet
+  type: XnorNetYolo
 
   params:
     width: 448
@@ -379,7 +379,7 @@ model:
         - in_feature: 50176
           out_feature: 4096
           bias: true
-          batch_norm: true
+          batch_norm: false
           activation: null
           mode: *mode
 
@@ -387,7 +387,7 @@ model:
           out_feature: 1470
           bias: true
           batch_norm: true
-          activation: False
+          activation: false
           #   type: ReLU
           #   args: {}
           mode: *mode

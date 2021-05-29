@@ -3,9 +3,9 @@ Usage:
     main.py train [options] [--dataset-config=<dataset config path>] [--model-config=<model config path>] [--runner-config=<runner config path>]
     main.py train (-h | --help)
 Options:
-    --dataset-config <dataset config path>  Path to YAML file for dataset configuration  [default: conf/mlp/data/data.yml] [type: path]
-    --model-config <model config path>  Path to YAML file for model configuration  [default: conf/mlp/model/model.yml] [type: path]
-    --runner-config <runner config path>  Path to YAML file for model configuration  [default: conf/mlp/training/training.yml] [type: path]
+    --dataset-config <dataset config path>  Path to YAML file for dataset configuration  [default: conf/data/data.yml] [type: path]
+    --model-config <model config path>  Path to YAML file for model configuration  [default: conf/model/model.yml] [type: path]
+    --runner-config <runner config path>  Path to YAML file for model configuration  [default: conf/training/training.yml] [type: path]
     -h --help  Show this.
 """
 from pathlib import Path
@@ -25,14 +25,14 @@ from pytorch_lightning.callbacks import (
 from torch.utils.data import DataLoader
 
 import wandb
+from src.data.dataloader import get_data_loaders
 from src.engine.train_jig import TrainingContainer
 from src.model import net as Net
-from src.model.net import BinaryConv, BinaryLinear
+from src.model.net import XnorNet
 from src.utils import (
     build_model,
     get_checkpoint_callback,
     get_config,
-    get_data_loaders,
     get_early_stopper,
     get_log_dir,
     get_next_version,
@@ -58,6 +58,13 @@ def train(hparams: dict):
     train_dataloader, test_dataloader = get_data_loaders(config=config)
 
     model: nn.Module = build_model(model_conf=config.model)
+    model.summary()
+    import torch
+
+    dummy = torch.randn((2, 3, 448, 448))
+    output = model(dummy)
+    print(output.shape)
+    exit()
     training_container: pl.LightningModule = TrainingContainer(model=model, config=config)
 
     checkpoint_callback = get_checkpoint_callback(log_dir=log_dir, config=config)
