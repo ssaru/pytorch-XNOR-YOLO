@@ -172,7 +172,7 @@ test_yolotensor_to_xyxyabs_testcase = [
                 0.08,
                 *F.one_hot(torch.tensor(2), 20).tolist(),
             ],
-            torch.tensor([[300, 300]]),
+            (300, 300),
         ),
         (
             (torch.tensor(0), torch.tensor(3), torch.tensor(1)),
@@ -280,7 +280,7 @@ test_calc_confidence_testcase = [
                 ],
             ],
         ),
-        torch.tensor([[300, 300]]),
+        (300, 300),
         (
             [
                 [1, 3],

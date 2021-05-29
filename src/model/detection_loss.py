@@ -62,7 +62,29 @@ def calc_yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor) -> di
     logger.info(f"obj_loss_dict : {obj_loss_dict}")
     logger.info(f"nonobj_loss_dict: {nonobj_loss_dict}")
 
+    obj_loss = (
+        obj_loss_dict["box1_cx_loss"]
+        + obj_loss_dict["box1_cy_loss"]
+        + obj_loss_dict["box1_width_loss"]
+        + obj_loss_dict["box1_height_loss"]
+        + obj_loss_dict["box2_cx_loss"]
+        + obj_loss_dict["box2_cy_loss"]
+        + obj_loss_dict["box2_width_loss"]
+        + obj_loss_dict["box2_height_loss"]
+    )
+    obj_loss *= lambda_obj
+    nonobj_loss = lambda_noobj * nonobj_loss_dict["classes_loss"]
+
+    total_loss = (
+        obj_loss
+        + nonobj_loss
+        + obj_loss_dict["classes_loss"]
+        + obj_loss_dict["confidence1_loss"]
+        + obj_loss_dict["confidence2_loss"]
+    )
+
     return {
+        "total_loss": total_loss,
         "lambda_obj": lambda_obj,
         "lambda_noobj": lambda_noobj,
         "obj_loss": obj_loss_dict,
@@ -114,7 +136,7 @@ def pairwise_iou(pred_boxes: List[Tuple], target_boxes: List[Tuple]):
     return ious
 
 
-def yolotensor_to_xyxyabs(yolo_coord_output: torch.Tensor, image_sizes: torch.Tensor) -> torch.Tensor:
+def yolotensor_to_xyxyabs(yolo_coord_output: torch.Tensor, image_sizes: Tuple = (448, 448)) -> torch.Tensor:
     """
     Args:
         yolo_coord_output (torch.Tensor): (n,7,7,30) shape of tensor. it represented output for yolo network
@@ -141,12 +163,12 @@ def yolotensor_to_xyxyabs(yolo_coord_output: torch.Tensor, image_sizes: torch.Te
     logger.info(f"copy coordination output. shape is : {yolo_coord_output.shape}")
     yolo_coord_output = yolo_coord_output.clone()
     batch = yolo_coord_output.shape[0]
+    image_width, image_height = image_sizes
 
     boxes = []
     with torch.no_grad():
         for idx in range(batch):
             cell_indices = torch.where(yolo_coord_output[idx, :, :, 0] > 0)
-            image_width, image_height = image_sizes[idx]
             dx, dy = image_width / 7, image_height / 7
 
             # TODO. for loop를 더 줄일 수 있을 것 같은데,,,
@@ -180,7 +202,9 @@ def yolotensor_to_xyxyabs(yolo_coord_output: torch.Tensor, image_sizes: torch.Te
     return boxes
 
 
-def calc_confidence(pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: torch.Tensor) -> torch.Tensor:
+def calc_confidence(
+    pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: Tuple = (448, 448)
+) -> torch.Tensor:
 
     pred_boxes: List = yolotensor_to_xyxyabs(yolo_coord_output=pred_tensor, image_sizes=image_sizes)
     target_boxes: List = yolotensor_to_xyxyabs(yolo_coord_output=target_tensor, image_sizes=image_sizes)
@@ -195,7 +219,7 @@ def calc_confidence(pred_tensor: torch.Tensor, target_tensor: torch.Tensor, imag
     return pred_tensor
 
 
-def yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: torch.Tensor) -> Dict:
+def yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: Tuple = (448, 448)) -> Dict:
     pred_tensor: torch.Tensor = calc_confidence(
         pred_tensor=pred_tensor, target_tensor=target_tensor, image_sizes=image_sizes
     )

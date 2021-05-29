@@ -17,7 +17,8 @@ def get_data_loaders(config: DictConfig) -> Tuple[DataLoader, DataLoader]:
     args = dict(config.data.dataset.params)
 
     args["image_set"] = "train"
-    args["transforms"] = Yolofy()
+
+    args["transforms"] = Yolofy(resize_sizes=(config.model.params.width, config.model.params.height))
     train_dataset = load_class(module=torchvision.datasets, name=config.data.dataset.type, args=args)
 
     train_dataloader = DataLoader(

@@ -77,7 +77,7 @@ def xyxyabs_to_xywhrel(
     return arr
 
 
-def build_label_tensor(xywhrel_boxes: torch.Tensor):
+def build_label_tensor(xywhrel_boxes: torch.Tensor) -> torch.Tensor:
     current_func_name = sys._getframe().f_code.co_name
     logger = make_logger(name=current_func_name)
 
@@ -122,14 +122,17 @@ def build_label_tensor(xywhrel_boxes: torch.Tensor):
 
 
 class Yolofy(object):
-    def __init__(self):
+    def __init__(self, resize_sizes: Tuple = (448, 448)):
         self.logger = make_logger(name=str(__class__))
         self._to_tensor = transforms.ToTensor()
         self._voc2012 = VOC2012()
+        self._resize_sizes = resize_sizes
 
     def __call__(self, image: Image, target: Dict):
         self.logger.info(f"image: {type(image)}:{image}")
         self.logger.info(f"target: {type(target)}:{target}")
+
+        image = image.resize(self._resize_sizes)
 
         target = OmegaConf.create(target)
 

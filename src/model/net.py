@@ -1,6 +1,6 @@
 import copy
 from logging import config
-from typing import Dict, List, Optional
+from typing import Dict, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -179,7 +179,7 @@ class XnorNetYolo(nn.Module):
 
         return x
 
-    def loss(self, pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: torch.Tensor):
+    def loss(self, pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: Tuple = (448, 448)):
         return self.loss_fn(pred_tensor=pred_tensor, target_tensor=target_tensor, image_sizes=image_sizes)
 
     def inference(self, x: torch.Tensor):
