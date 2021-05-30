@@ -37,7 +37,7 @@ def prod(iterable):
 
 
 def build_model(model_conf: DictConfig):
-    from src.model import net as Net
+    import src.model as Net
 
     # logging
     current_func_name = sys._getframe().f_code.co_name

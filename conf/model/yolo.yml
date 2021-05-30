@@ -1,0 +1,383 @@
+model:
+  type: Yolo
+
+  params:
+    width: 448
+    height: 448
+    channels: &in_channels 3
+    classes: &out_feature 20
+
+    feature_layers:
+      conv:
+        # Layer 1
+        - in_channels: *in_channels
+          out_channels: 64
+          kernel_size: 7
+          stride: 2
+          padding: 3
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool:
+            type: MaxPool2d
+            args:
+              kernel_size: [2, 2]
+              padding: 0
+
+        # Layer 2
+        - in_channels: 64
+          out_channels: 192
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool:
+            type: MaxPool2d
+            args:
+              kernel_size: [2, 2]
+              padding: 0
+
+        # Layer 3
+        - in_channels: 192
+          out_channels: 128
+          kernel_size: 1
+          stride: 1
+          padding: 0
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 4
+        - in_channels: 128
+          out_channels: 256
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 5
+        - in_channels: 256
+          out_channels: 256
+          kernel_size: 1
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 6
+        - in_channels: 256
+          out_channels: 512
+          kernel_size: 3
+          stride: 1
+          padding: 0
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool:
+            type: MaxPool2d
+            args:
+              kernel_size: [2, 2]
+              padding: 0
+
+        # Layer 7
+        - in_channels: 512
+          out_channels: 256
+          kernel_size: 1
+          stride: 1
+          padding: 0
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 8
+        - in_channels: 256
+          out_channels: 512
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 9
+        - in_channels: 512
+          out_channels: 256
+          kernel_size: 1
+          stride: 1
+          padding: 0
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 10
+        - in_channels: 256
+          out_channels: 512
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 11
+        - in_channels: 512
+          out_channels: 256
+          kernel_size: 1
+          stride: 1
+          padding: 0
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 12
+        - in_channels: 256
+          out_channels: 512
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 13
+        - in_channels: 512
+          out_channels: 256
+          kernel_size: 1
+          stride: 1
+          padding: 0
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 14
+        - in_channels: 256
+          out_channels: 512
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: False
+
+        # Layer 15
+        - in_channels: 512
+          out_channels: 512
+          kernel_size: 1
+          stride: 1
+          padding: 0
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 16
+        - in_channels: 512
+          out_channels: 1024
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool:
+            type: MaxPool2d
+            args:
+              kernel_size: [2, 2]
+              padding: 0
+
+        # Layer 17
+        - in_channels: 1024
+          out_channels: 512
+          kernel_size: 1
+          stride: 1
+          padding: 0
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 18
+        - in_channels: 512
+          out_channels: 1024
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 19
+        - in_channels: 1024
+          out_channels: 512
+          kernel_size: 1
+          stride: 1
+          padding: 0
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 20
+        - in_channels: 512
+          out_channels: 1024
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 21
+        - in_channels: 1024
+          out_channels: 1024
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 22
+        - in_channels: 1024
+          out_channels: 1024
+          kernel_size: 3
+          stride: 2
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 23
+        - in_channels: 1024
+          out_channels: 1024
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+        # Layer 24
+        - in_channels: 1024
+          out_channels: 1024
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation:
+            type: LeakyReLU
+            args: {}
+          pool: null
+
+      #############
+
+      linear:
+        - in_feature: 50176
+          out_feature: 4096
+          bias: true
+          batch_norm: false
+          activation: null
+          dropout:
+            type: Dropout
+            args: { "p": 0.5 }
+
+        - in_feature: 4096
+          out_feature: 1470
+          bias: true
+          batch_norm: true
+          activation: null
+          #   type: ReLU
+          #   args: {}
+          dropout: false
