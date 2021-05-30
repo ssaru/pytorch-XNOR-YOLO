@@ -11,7 +11,7 @@ dataloader_testcase = [
     (
         OmegaConf.load("conf/data/data.yml"),
         OmegaConf.load("conf/model/xnoryolo.yml"),
-        OmegaConf.load("conf/training/training.yml"),
+        OmegaConf.load("conf/training/xnoryolo_training.yml"),
     )
 ]
 

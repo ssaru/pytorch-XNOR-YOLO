@@ -24,7 +24,7 @@ def test_train_xnoryolo_pipeline(fix_seed, gpus):
     config_path = {
         "--data-config": "conf/data/data.yml",
         "--model-config": "conf/model/xnoryolo.yml",
-        "--training-config": "conf/training/training.yml",
+        "--training-config": "conf/training/xnoryolo_training.yml",
     }
     config_list = ["--data-config", "--model-config", "--training-config"]
     config: DictConfig = get_config(hparams=config_path, options=config_list)
@@ -53,7 +53,7 @@ def test_train_yolo_pipeline(fix_seed, gpus):
     config_path = {
         "--data-config": "conf/data/data.yml",
         "--model-config": "conf/model/yolo.yml",
-        "--training-config": "conf/training/training.yml",
+        "--training-config": "conf/training/yolo_training.yml",
     }
     config_list = ["--data-config", "--model-config", "--training-config"]
     config: DictConfig = get_config(hparams=config_path, options=config_list)

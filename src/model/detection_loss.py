@@ -45,9 +45,8 @@ def calc_yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor) -> di
     lambda_obj = 5.0
     lambda_noobj = 0.5
 
-    with torch.no_grad():
-        obj_mask = torch.stack([target_tensor[:, :, :, 0] for _ in range(30)], dim=3)
-        noobj_mask = torch.neg(obj_mask - 1)
+    obj_mask = torch.stack([target_tensor[:, :, :, 0] for _ in range(30)], dim=3)
+    noobj_mask = torch.neg(obj_mask - 1)
 
     logger.info(f"shape of obj_mask : {obj_mask.shape}, shape of noobj_mask: {noobj_mask.shape}")
     obj_output_block = obj_mask * pred_tensor
@@ -83,6 +82,9 @@ def calc_yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor) -> di
         + obj_loss_dict["confidence2_loss"]
     )
 
+    batch_size = pred_tensor.shape[0]
+    total_loss /= batch_size
+
     return {
         "total_loss": total_loss,
         "lambda_obj": lambda_obj,
@@ -96,6 +98,8 @@ def calc_iou(pred_box: torch.Tensor, target_box: torch.Tensor):
     """
     single pred box and target_box
     """
+    pred_box = pred_box.clone()
+    target_box = target_box.clone()
 
     pred_area = (pred_box[2] - pred_box[0]) * (pred_box[3] - pred_box[1])
     target_area = (target_box[2] - target_box[0]) * (target_box[3] - target_box[1])
@@ -166,38 +170,38 @@ def yolotensor_to_xyxyabs(yolo_coord_output: torch.Tensor, image_sizes: Tuple = 
     image_width, image_height = image_sizes
 
     boxes = []
-    with torch.no_grad():
-        for idx in range(batch):
-            cell_indices = torch.where(yolo_coord_output[idx, :, :, 0] > 0)
-            dx, dy = image_width / 7, image_height / 7
 
-            # TODO. for loop를 더 줄일 수 있을 것 같은데,,,
-            for ys, xs in zip(*cell_indices):
-                box1_x_shift, box1_y_shift, box1_width, box1_height = yolo_coord_output[idx, ys, xs, 1:5]
+    for idx in range(batch):
+        cell_indices = torch.where(yolo_coord_output[idx, :, :, 0] > 0)
+        dx, dy = image_width / 7, image_height / 7
 
-                box1_cx, box1_cy = (dx * xs + box1_x_shift * dx), (dy * ys + box1_y_shift * dy)
-                box1_width, box1_height = (box1_width * image_width), (box1_height * image_height)
+        # TODO. for loop를 더 줄일 수 있을 것 같은데,,,
+        for ys, xs in zip(*cell_indices):
+            box1_x_shift, box1_y_shift, box1_width, box1_height = yolo_coord_output[idx, ys, xs, 1:5]
 
-                box1_xmin, box1_ymin = (box1_cx - box1_width / 2), (box1_cy - box1_height / 2)
-                box1_xmax, box1_ymax = (box1_cx + box1_width / 2), (box1_cy + box1_height / 2)
-                yolo_coord_output[idx, ys, xs, 1:5] = torch.tensor(
-                    [box1_xmin, box1_ymin, box1_xmax, box1_ymax], dtype=torch.float32
-                )
+            box1_cx, box1_cy = (dx * xs + box1_x_shift * dx), (dy * ys + box1_y_shift * dy)
+            box1_width, box1_height = (box1_width * image_width), (box1_height * image_height)
 
-                box2_x_shift, box2_y_shift, box2_width, box2_height = yolo_coord_output[idx, ys, xs, 6:10]
+            box1_xmin, box1_ymin = (box1_cx - box1_width / 2), (box1_cy - box1_height / 2)
+            box1_xmax, box1_ymax = (box1_cx + box1_width / 2), (box1_cy + box1_height / 2)
+            yolo_coord_output[idx, ys, xs, 1:5] = torch.tensor(
+                [box1_xmin, box1_ymin, box1_xmax, box1_ymax], dtype=torch.float32
+            )
 
-                box2_cx, box2_cy = (dx * xs + box2_x_shift * dx), (dy * ys + box2_y_shift * dy)
-                box2_width, box2_height = (image_width * box2_width), (image_height * box2_height)
+            box2_x_shift, box2_y_shift, box2_width, box2_height = yolo_coord_output[idx, ys, xs, 6:10]
 
-                box2_xmin, box2_ymin = (box2_cx - box2_width / 2), (box2_cy - box2_height / 2)
-                box2_xmax, box2_ymax = (box2_cx + box2_width / 2), (box2_cy + box2_height / 2)
-                yolo_coord_output[idx, ys, xs, 6:10] = torch.tensor(
-                    [box2_xmin, box2_ymin, box2_xmax, box2_ymax], dtype=torch.float32
-                )
+            box2_cx, box2_cy = (dx * xs + box2_x_shift * dx), (dy * ys + box2_y_shift * dy)
+            box2_width, box2_height = (image_width * box2_width), (image_height * box2_height)
 
-                box1 = yolo_coord_output[idx, ys, xs, 1:5]
-                box2 = yolo_coord_output[idx, ys, xs, 6:10]
-                boxes.append(((torch.tensor(idx), ys, xs), box1, box2))
+            box2_xmin, box2_ymin = (box2_cx - box2_width / 2), (box2_cy - box2_height / 2)
+            box2_xmax, box2_ymax = (box2_cx + box2_width / 2), (box2_cy + box2_height / 2)
+            yolo_coord_output[idx, ys, xs, 6:10] = torch.tensor(
+                [box2_xmin, box2_ymin, box2_xmax, box2_ymax], dtype=torch.float32
+            )
+
+            box1 = yolo_coord_output[idx, ys, xs, 1:5]
+            box2 = yolo_coord_output[idx, ys, xs, 6:10]
+            boxes.append(((torch.tensor(idx), ys, xs), box1, box2))
 
     return boxes
 

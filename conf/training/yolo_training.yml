@@ -1,12 +1,12 @@
 hyperparameter:
-  batch_size: &batch_size 32
+  batch_size: &batch_size 16
   lr: &lr 1e-3
-  optimizer: &optimizer SGD
-  momentum: &momentum 0
+  optimizer: &optimizer Adam
+  #momentum: &momentum 0
   gamma: &gamma .1
 
-project: &project XNOR
-experiments: &title 81.xnor_conv(deterministic)
+project: &project YOLO
+experiments: &title 1.YOLO
 
 dataloader:
   type: DataLoader
@@ -27,7 +27,7 @@ optimizer:
     # initial points
     # [0.5, 0.25, 0.1, 0.05, 0.025, 0.01]
     lr: *lr
-    momentum: *momentum
+    # momentum: *momentum
 
 runner:
   type: TrainingContainer
@@ -53,8 +53,8 @@ runner:
   earlystopping:
     type: EarlyStopping
     params:
-      monitor: valid/accuracy
-      mode: max
+      monitor: valid/loss
+      mode: min
       patience: 5
       verbose: True
 

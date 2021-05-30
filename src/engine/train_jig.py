@@ -138,7 +138,7 @@ class TrainingContainer(LightningModule):
             value=total_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
         self.log(
@@ -146,7 +146,7 @@ class TrainingContainer(LightningModule):
             value=total_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
 
@@ -156,7 +156,7 @@ class TrainingContainer(LightningModule):
             value=box1_confidence_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
         self.log(
@@ -164,7 +164,7 @@ class TrainingContainer(LightningModule):
             value=box1_confidence_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
 
@@ -174,7 +174,7 @@ class TrainingContainer(LightningModule):
             value=box1_cx_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
         self.log(
@@ -182,7 +182,7 @@ class TrainingContainer(LightningModule):
             value=box1_cx_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
 
@@ -192,7 +192,7 @@ class TrainingContainer(LightningModule):
             value=box1_cy_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
         self.log(
@@ -200,7 +200,7 @@ class TrainingContainer(LightningModule):
             value=box1_cy_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
 
@@ -210,7 +210,7 @@ class TrainingContainer(LightningModule):
             value=box1_width_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
         self.log(
@@ -218,7 +218,7 @@ class TrainingContainer(LightningModule):
             value=box1_width_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
 
@@ -228,7 +228,7 @@ class TrainingContainer(LightningModule):
             value=box1_height_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
         self.log(
@@ -236,7 +236,7 @@ class TrainingContainer(LightningModule):
             value=box1_height_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
 
@@ -246,7 +246,7 @@ class TrainingContainer(LightningModule):
             value=box2_confidence_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
         self.log(
@@ -254,7 +254,7 @@ class TrainingContainer(LightningModule):
             value=box2_confidence_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
 
@@ -264,7 +264,7 @@ class TrainingContainer(LightningModule):
             value=box2_cx_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
         self.log(
@@ -272,7 +272,7 @@ class TrainingContainer(LightningModule):
             value=box2_cx_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
 
@@ -282,7 +282,7 @@ class TrainingContainer(LightningModule):
             value=box2_cy_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
         self.log(
@@ -290,7 +290,7 @@ class TrainingContainer(LightningModule):
             value=box2_cy_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
 
@@ -300,7 +300,7 @@ class TrainingContainer(LightningModule):
             value=box2_width_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
         self.log(
@@ -308,7 +308,7 @@ class TrainingContainer(LightningModule):
             value=box2_width_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
 
@@ -318,7 +318,7 @@ class TrainingContainer(LightningModule):
             value=box2_height_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
         self.log(
@@ -326,7 +326,7 @@ class TrainingContainer(LightningModule):
             value=box2_height_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
 
@@ -336,7 +336,7 @@ class TrainingContainer(LightningModule):
             value=classes_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
         self.log(
@@ -344,6 +344,6 @@ class TrainingContainer(LightningModule):
             value=classes_loss,
             on_step=True,
             on_epoch=False,
-            prog_bar=True,
+            prog_bar=False,
             logger=False,
         )
