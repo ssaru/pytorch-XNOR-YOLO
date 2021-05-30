@@ -35,10 +35,10 @@ def test_train_xnoryolo_pipeline(fix_seed, gpus):
     training_container = TrainingContainer(model=model, config=config)
 
     trainer_params = dict(config.runner.trainer.params)
-    trainer_params["limit_train_batches"] = 0.01
-    trainer_params["limit_val_batches"] = 0.01
+    trainer_params["limit_train_batches"] = 0.001
+    trainer_params["limit_val_batches"] = 0.001
     trainer_params["fast_dev_run"] = True
-    trainer_params["max_epochs"] = 2
+    trainer_params["max_epochs"] = 1
     trainer_params["gpus"] = gpus
     if not gpus:
         trainer_params["accelerator"] = None
@@ -64,8 +64,8 @@ def test_train_yolo_pipeline(fix_seed, gpus):
     training_container = TrainingContainer(model=model, config=config)
 
     trainer_params = dict(config.runner.trainer.params)
-    trainer_params["limit_train_batches"] = 0.01
-    trainer_params["limit_val_batches"] = 0.01
+    trainer_params["limit_train_batches"] = 0.001
+    trainer_params["limit_val_batches"] = 0.001
     trainer_params["fast_dev_run"] = True
     trainer_params["max_epochs"] = 2
     trainer_params["gpus"] = gpus
