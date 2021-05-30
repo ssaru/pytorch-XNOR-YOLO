@@ -1,9 +1,12 @@
 hyperparameter:
+  # image 수: 11,540
   batch_size: &batch_size 16
-  lr: &lr 1e-3
-  optimizer: &optimizer Adam
-  #momentum: &momentum 0
-  gamma: &gamma .1
+  steps_per_epoch: &steps_per_epoch 721
+  lr: &lr 5e-4
+  optimizer: &optimizer SGD
+  momentum: &momentum 0.9
+  epoch: &max_epochs 40000
+  # gamma: &gamma .1
 
 project: &project YOLO
 experiments: &title 1.YOLO
@@ -14,20 +17,21 @@ dataloader:
     num_workers: 10
     batch_size: *batch_size # 50 in paper
 
-scheduler: # ExponentialLR in paper
-  type: ExponentialLR
+scheduler:
+  type: OneCycleLR
   params:
-    # initial points
-    # [0.98, 0.97, 0.96, 0.95, 0.94, 0.93, 0.92]
-    gamma: *gamma
+    max_lr: 0.05
+    steps_per_epoch: *steps_per_epoch
+    epochs: *max_epochs
+    pct_start: 0.05
+    anneal_strategy: cos
 
 optimizer:
   type: *optimizer
   params:
-    # initial points
-    # [0.5, 0.25, 0.1, 0.05, 0.025, 0.01]
     lr: *lr
-    # momentum: *momentum
+    momentum: *momentum
+    weight_decay: 0.0005
 
 runner:
   type: TrainingContainer
@@ -35,7 +39,7 @@ runner:
   trainer:
     type: Trainer
     params:
-      max_epochs: 10
+      max_epochs: 40000
       gpus: -1
       accelerator: ddp
       fast_dev_run: false
@@ -62,7 +66,7 @@ runner:
     name: *title
     project_name: *project
     output_dir: output/runs
-#scheduler: # ExponentialLR in paper
+#scheduler:
 # type: StepLR
 # params:
 #   step_size: 10
@@ -84,3 +88,8 @@ runner:
 #   cooldown: 0
 #   min_lr: 0
 #   eps: 0.00000008
+# type: ExponentialLR
+# params:
+#   # initial points
+#   # [0.98, 0.97, 0.96, 0.95, 0.94, 0.93, 0.92]
+#   gamma: *gamma

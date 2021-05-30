@@ -25,7 +25,6 @@ class TrainingContainer(LightningModule):
         self.save_hyperparameters(config)
         self.config = config
         self.lr = config.optimizer.params.lr
-        self.scheduler_gamma = config.scheduler.params.gamma
         self.image_sizes = (config.model.params.width, config.model.params.height)
 
     def forward(self, x):
@@ -37,7 +36,7 @@ class TrainingContainer(LightningModule):
         opt = load_class(module=optim, name=self.config.optimizer.type, args=opt_args)
 
         scheduler_args = dict(self.config.scheduler.params)
-        scheduler_args.update({"optimizer": opt, "gamma": self.scheduler_gamma})
+        scheduler_args.update({"optimizer": opt})
         scheduler = load_class(
             module=optim.lr_scheduler,
             name=self.config.scheduler.type,

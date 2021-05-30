@@ -80,8 +80,8 @@ def train(hparams: dict):
         num_sanity_val_steps=0,
         overfit_batches=0.0,
         precision=32,
-        limit_train_batches=1,
-        limit_val_batches=1,
+        limit_train_batches=1.0,
+        limit_val_batches=1.0,
         profiler=profiler,
     )
     trainer.fit(
