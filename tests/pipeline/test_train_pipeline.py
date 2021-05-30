@@ -46,8 +46,9 @@ def test_train_pipeline(fix_seed, config, gpus):
     training_container = TrainingContainer(model=model, config=config)
 
     trainer_params = dict(config.runner.trainer.params)
-    trainer_params["limit_train_batches"] = 0.1
-    trainer_params["limit_val_batches"] = 0.1
+    trainer_params["limit_train_batches"] = 0.01
+    trainer_params["limit_val_batches"] = 0.01
+    trainer_params["fast_dev_run"] = True
     trainer_params["max_epochs"] = 2
     trainer_params["gpus"] = gpus
     if not gpus:
@@ -55,8 +56,4 @@ def test_train_pipeline(fix_seed, config, gpus):
 
     trainer = Trainer(**trainer_params)
 
-    trainer.fit(
-        model=training_container,
-        train_dataloader=train_dataloader,
-        val_dataloaders=test_dataloader,
-    )
+    trainer.fit(model=training_container, train_dataloader=train_dataloader, val_dataloaders=test_dataloader)
