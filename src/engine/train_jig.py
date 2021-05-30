@@ -138,7 +138,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
         self.log(
             name=f"{prefix}_loss",
@@ -146,7 +146,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
 
         box1_confidence_loss = loss["obj_loss"]["confidence1_loss"]
@@ -156,7 +156,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
         self.log(
             name=f"{prefix}_box1_confidence_loss",
@@ -164,7 +164,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
 
         box1_cx_loss = loss["obj_loss"]["box1_cx_loss"]
@@ -174,7 +174,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
         self.log(
             name=f"{prefix}_box1_cx_loss",
@@ -182,7 +182,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
 
         box1_cy_loss = loss["obj_loss"]["box1_cy_loss"]
@@ -192,7 +192,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
         self.log(
             name=f"{prefix}_box1_cy_loss",
@@ -200,7 +200,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
 
         box1_width_loss = loss["obj_loss"]["box1_width_loss"]
@@ -210,7 +210,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
         self.log(
             name=f"{prefix}_box1_width_loss",
@@ -218,7 +218,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
 
         box1_height_loss = loss["obj_loss"]["box1_height_loss"]
@@ -228,7 +228,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
         self.log(
             name=f"{prefix}_box1_height_loss",
@@ -236,7 +236,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
 
         box2_confidence_loss = loss["obj_loss"]["confidence2_loss"]
@@ -246,7 +246,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
         self.log(
             name=f"{prefix}_box2_confidence_loss",
@@ -254,7 +254,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
 
         box2_cx_loss = loss["obj_loss"]["box2_cx_loss"]
@@ -264,7 +264,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
         self.log(
             name=f"{prefix}_box2_cx_loss",
@@ -272,7 +272,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
 
         box2_cy_loss = loss["obj_loss"]["box2_cy_loss"]
@@ -282,7 +282,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
         self.log(
             name=f"{prefix}_box2_cy_loss",
@@ -290,7 +290,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
 
         box2_width_loss = loss["obj_loss"]["box2_width_loss"]
@@ -300,7 +300,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
         self.log(
             name=f"{prefix}_box2_width_loss",
@@ -308,7 +308,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
 
         box2_height_loss = loss["obj_loss"]["box2_height_loss"]
@@ -318,7 +318,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
         self.log(
             name=f"{prefix}_box2_height_loss",
@@ -326,7 +326,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
 
         classes_loss = loss["obj_loss"]["classes_loss"]
@@ -336,7 +336,7 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
         self.log(
             name=f"{prefix}_classes_loss",
@@ -344,5 +344,5 @@ class TrainingContainer(LightningModule):
             on_step=True,
             on_epoch=False,
             prog_bar=False,
-            logger=False,
+            logger=True,
         )
