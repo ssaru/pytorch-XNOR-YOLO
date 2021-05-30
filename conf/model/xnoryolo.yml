@@ -381,13 +381,11 @@ model:
           bias: true
           batch_norm: false
           activation: null
-          mode: *mode
+          dropout: null
 
         - in_feature: 4096
           out_feature: 1470
           bias: true
           batch_norm: true
           activation: false
-          #   type: ReLU
-          #   args: {}
-          mode: *mode
+          dropout: null

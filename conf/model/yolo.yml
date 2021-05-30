@@ -376,7 +376,7 @@ model:
         - in_feature: 4096
           out_feature: 1470
           bias: true
-          batch_norm: true
+          batch_norm: false
           activation: null
           #   type: ReLU
           #   args: {}

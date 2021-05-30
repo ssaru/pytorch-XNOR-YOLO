@@ -6,16 +6,15 @@ hyperparameter:
   optimizer: &optimizer SGD
   momentum: &momentum 0.9
   epoch: &max_epochs 40000
-  # gamma: &gamma .1
 
 project: &project YOLO
-experiments: &title 1.YOLO
+experiments: &title 1.yolo
 
 dataloader:
   type: DataLoader
   params:
     num_workers: 10
-    batch_size: *batch_size # 50 in paper
+    batch_size: *batch_size
 
 scheduler:
   type: OneCycleLR
@@ -59,7 +58,7 @@ runner:
     params:
       monitor: valid/loss
       mode: min
-      patience: 5
+      patience: 30
       verbose: True
 
   experiments:

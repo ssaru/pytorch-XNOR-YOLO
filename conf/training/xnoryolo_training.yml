@@ -1,9 +1,11 @@
 hyperparameter:
+  # image 수: 11,540
   batch_size: &batch_size 4
-  lr: &lr 1e-3
-  optimizer: &optimizer Adam
-  # momentum: &momentum 0
-  gamma: &gamma .1
+  steps_per_epoch: &steps_per_epoch 2885
+  lr: &lr 5e-4
+  optimizer: &optimizer SGD
+  momentum: &momentum 0.9
+  epoch: &max_epochs 40000
 
 project: &project XNOR-YOLO
 experiments: &title 1.xnor-yolo(deterministic)
@@ -12,22 +14,22 @@ dataloader:
   type: DataLoader
   params:
     num_workers: 10
-    batch_size: *batch_size # 50 in paper
+    batch_size: *batch_size
 
-scheduler: # ExponentialLR in paper
-  type: ExponentialLR
+scheduler:
+  type: OneCycleLR
   params:
-    # initial points
-    # [0.98, 0.97, 0.96, 0.95, 0.94, 0.93, 0.92]
-    gamma: *gamma
+    max_lr: 0.05
+    steps_per_epoch: *steps_per_epoch
+    epochs: *max_epochs
+    pct_start: 0.05
+    anneal_strategy: cos
 
 optimizer:
   type: *optimizer
   params:
-    # initial points
-    # [0.5, 0.25, 0.1, 0.05, 0.025, 0.01]
     lr: *lr
-    # momentum: *momentum
+    momentum: *momentum
 
 runner:
   type: TrainingContainer
@@ -55,7 +57,7 @@ runner:
     params:
       monitor: valid/loss
       mode: min
-      patience: 5
+      patience: 30
       verbose: True
 
   experiments:

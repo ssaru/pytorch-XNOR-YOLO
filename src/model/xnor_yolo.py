@@ -7,7 +7,7 @@ from torchsummary import summary as torch_summary
 
 from src.data.pascal_voc import VOC2012
 from src.model.detection_loss import yolo_loss
-from src.model.utils import BinarizedConvBlock, BinarizedLinearBlock
+from src.model.utils import BinarizedConvBlock, BinarizedLinearBlock, LinearBlock
 from src.utils import make_logger
 
 logger = make_logger(name=str(__name__))
@@ -18,7 +18,7 @@ def _build_conv_layers(conv_layers_config):
 
 
 def _build_linear_layers(linear_layers_config):
-    return nn.ModuleList([BinarizedLinearBlock(**params) for params in linear_layers_config])
+    return nn.ModuleList([LinearBlock(**params) for params in linear_layers_config])
 
 
 class XnorNetYolo(nn.Module):
