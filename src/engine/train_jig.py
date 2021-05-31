@@ -60,289 +60,224 @@ class TrainingContainer(LightningModule):
         _, loss_dict = self.shared_step(x, y)
 
         total_loss = loss_dict["total_loss"]
-        self.logging_loss(loss_dict, prefix="train")
+        box1_confidence_loss = loss_dict["obj_loss"]["confidence1_loss"]
+        box1_cx_loss = loss_dict["obj_loss"]["box1_cx_loss"]
+        box1_cy_loss = loss_dict["obj_loss"]["box1_cy_loss"]
+        box1_width_loss = loss_dict["obj_loss"]["box1_width_loss"]
+        box1_height_loss = loss_dict["obj_loss"]["box1_height_loss"]
+
+        box2_confidence_loss = loss_dict["obj_loss"]["confidence2_loss"]
+        box2_cx_loss = loss_dict["obj_loss"]["box2_cx_loss"]
+        box2_cy_loss = loss_dict["obj_loss"]["box2_cy_loss"]
+        box2_width_loss = loss_dict["obj_loss"]["box2_width_loss"]
+        box2_height_loss = loss_dict["obj_loss"]["box2_height_loss"]
+
+        classes_loss = loss_dict["obj_loss"]["classes_loss"]
+
+        self.log("train_loss", total_loss, on_step=True, logger=True)
+
+        self.log("train_box1_confidence_loss", box1_confidence_loss, on_step=True, logger=True)
+        self.log("train_box1_cx_loss", box1_cx_loss, on_step=True, logger=True)
+        self.log("train_box1_cy_loss", box1_cy_loss, on_step=True, logger=True)
+        self.log("train_box1_width_loss", box1_width_loss, on_step=True, logger=True)
+        self.log("train_box1_height_loss", box1_height_loss, on_step=True, logger=True)
+
+        self.log("train_box2_confidence_loss", box2_confidence_loss, on_step=True, logger=True)
+        self.log("train_box2_cx_loss", box2_cx_loss, on_step=True, logger=True)
+        self.log("train_box2_cy_loss", box2_cy_loss, on_step=True, logger=True)
+        self.log("train_box2_width_loss", box2_width_loss, on_step=True, logger=True)
+        self.log("train_box2_height_loss", box2_height_loss, on_step=True, logger=True)
+
+        self.log("train_classes_loss", classes_loss, on_step=True, logger=True)
 
         return {
-            "loss": loss_dict["total_loss"],
+            "loss": total_loss,
             "train_loss": total_loss,
+            "train_box1_confidence_loss": box1_confidence_loss,
+            "train_box1_cx_loss": box1_cx_loss,
+            "train_box1_cy_loss": box1_cy_loss,
+            "train_box1_width_loss": box1_width_loss,
+            "train_box1_height_loss": box1_height_loss,
+            "train_box2_confidence_loss": box2_confidence_loss,
+            "train_box2_cx_loss": box2_cx_loss,
+            "train_box2_cy_loss": box2_cy_loss,
+            "train_box2_width_loss": box2_width_loss,
+            "train_box2_height_loss": box2_height_loss,
+            "train_classes_loss": classes_loss,
         }
 
     def training_epoch_end(self, training_step_outputs):
         loss = 0
+        box1_confidence_loss = 0
+        box1_cx_loss, box1_cy_loss = 0, 0
+        box1_width_loss, box1_height_loss = 0, 0
+
+        box2_confidence_loss = 0
+        box2_cx_loss, box2_cy_loss = 0, 0
+        box2_width_loss, box2_height_loss = 0, 0
+
+        classes_loss = 0
+
         num_of_outputs = len(training_step_outputs)
 
         for log_dict in training_step_outputs:
             loss += log_dict["loss"]
 
-        loss /= num_of_outputs
+            box1_confidence_loss += log_dict["train_box1_confidence_loss"]
+            box1_cx_loss += log_dict["train_box1_cx_loss"]
+            box1_cy_loss += log_dict["train_box1_cy_loss"]
+            box1_width_loss += log_dict["train_box1_width_loss"]
+            box1_height_loss += log_dict["train_box1_height_loss"]
 
-        self.log(
-            name="train/loss",
-            value=loss,
-            on_step=False,
-            on_epoch=True,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name="train_loss",
-            value=loss,
-            on_step=False,
-            on_epoch=True,
-            prog_bar=False,
-            logger=True,
-        )
+            box2_confidence_loss += log_dict["train_box2_confidence_loss"]
+            box2_cx_loss += log_dict["train_box2_cx_loss"]
+            box2_cy_loss += log_dict["train_box2_cy_loss"]
+            box2_width_loss += log_dict["train_box2_width_loss"]
+            box2_height_loss += log_dict["train_box2_height_loss"]
+
+            classes_loss += log_dict["train_classes_loss"]
+
+        loss /= num_of_outputs
+        box1_confidence_loss /= num_of_outputs
+        box1_cx_loss /= num_of_outputs
+        box1_cy_loss /= num_of_outputs
+        box1_width_loss /= num_of_outputs
+        box1_height_loss /= num_of_outputs
+
+        box2_confidence_loss /= num_of_outputs
+        box2_cx_loss /= num_of_outputs
+        box2_cy_loss /= num_of_outputs
+        box2_width_loss /= num_of_outputs
+        box2_height_loss /= num_of_outputs
+
+        classes_loss /= num_of_outputs
+
+        self.log("train_loss", loss, on_epoch=True, logger=True)
+
+        self.log("train_box1_confidence_loss", box1_confidence_loss, on_epoch=True, logger=True)
+        self.log("train_box1_cx_loss", box1_cx_loss, on_epoch=True, logger=True)
+        self.log("train_box1_cy_loss", box1_cy_loss, on_epoch=True, logger=True)
+        self.log("train_box1_width_loss", box1_width_loss, on_epoch=True, logger=True)
+        self.log("train_box1_height_loss", box1_height_loss, on_epoch=True, logger=True)
+
+        self.log("train_box2_confidence_loss", box2_confidence_loss, on_epoch=True, logger=True)
+        self.log("train_box2_cx_loss", box2_cx_loss, on_epoch=True, logger=True)
+        self.log("train_box2_cy_loss", box2_cy_loss, on_epoch=True, logger=True)
+        self.log("train_box2_width_loss", box2_width_loss, on_epoch=True, logger=True)
+        self.log("train_box2_height_loss", box2_height_loss, on_epoch=True, logger=True)
+
+        self.log("train_classes_loss", classes_loss, on_epoch=True, logger=True)
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         _, loss_dict = self.shared_step(x, y)
+
         total_loss = loss_dict["total_loss"]
-        self.logging_loss(loss_dict, prefix="valid")
+        box1_confidence_loss = loss_dict["obj_loss"]["confidence1_loss"]
+        box1_cx_loss = loss_dict["obj_loss"]["box1_cx_loss"]
+        box1_cy_loss = loss_dict["obj_loss"]["box1_cy_loss"]
+        box1_width_loss = loss_dict["obj_loss"]["box1_width_loss"]
+        box1_height_loss = loss_dict["obj_loss"]["box1_height_loss"]
+
+        box2_confidence_loss = loss_dict["obj_loss"]["confidence2_loss"]
+        box2_cx_loss = loss_dict["obj_loss"]["box2_cx_loss"]
+        box2_cy_loss = loss_dict["obj_loss"]["box2_cy_loss"]
+        box2_width_loss = loss_dict["obj_loss"]["box2_width_loss"]
+        box2_height_loss = loss_dict["obj_loss"]["box2_height_loss"]
+
+        classes_loss = loss_dict["obj_loss"]["classes_loss"]
+
+        self.log("valid_loss", total_loss, on_step=True, logger=True)
+
+        self.log("valid_box1_confidence_loss", box1_confidence_loss, on_step=True, logger=True)
+        self.log("valid_box1_cx_loss", box1_cx_loss, on_step=True, logger=True)
+        self.log("valid_box1_cy_loss", box1_cy_loss, on_step=True, logger=True)
+        self.log("valid_box1_width_loss", box1_width_loss, on_step=True, logger=True)
+        self.log("valid_box1_height_loss", box1_height_loss, on_step=True, logger=True)
+
+        self.log("valid_box2_confidence_loss", box2_confidence_loss, on_step=True, logger=True)
+        self.log("valid_box2_cx_loss", box2_cx_loss, on_step=True, logger=True)
+        self.log("valid_box2_cy_loss", box2_cy_loss, on_step=True, logger=True)
+        self.log("valid_box2_width_loss", box2_width_loss, on_step=True, logger=True)
+        self.log("valid_box2_height_loss", box2_height_loss, on_step=True, logger=True)
+
+        self.log("valid_classes_loss", classes_loss, on_step=True, logger=True)
 
         return {
-            "valid/loss": total_loss,
+            "loss": total_loss,
             "valid_loss": total_loss,
+            "valid_box1_confidence_loss": box1_confidence_loss,
+            "valid_box1_cx_loss": box1_cx_loss,
+            "valid_box1_cy_loss": box1_cy_loss,
+            "valid_box1_width_loss": box1_width_loss,
+            "valid_box1_height_loss": box1_height_loss,
+            "valid_box2_confidence_loss": box2_confidence_loss,
+            "valid_box2_cx_loss": box2_cx_loss,
+            "valid_box2_cy_loss": box2_cy_loss,
+            "valid_box2_width_loss": box2_width_loss,
+            "valid_box2_height_loss": box2_height_loss,
+            "valid_classes_loss": classes_loss,
         }
 
     def validation_epoch_end(self, validation_step_outputs):
         loss = 0
+
+        box1_confidence_loss = 0
+        box1_cx_loss, box1_cy_loss = 0, 0
+        box1_width_loss, box1_height_loss = 0, 0
+
+        box2_confidence_loss = 0
+        box2_cx_loss, box2_cy_loss = 0, 0
+        box2_width_loss, box2_height_loss = 0, 0
+
+        classes_loss = 0
+
         num_of_outputs = len(validation_step_outputs)
 
         for log_dict in validation_step_outputs:
-            loss += log_dict["valid/loss"]
+            loss += log_dict["loss"]
 
-        loss = loss / num_of_outputs
+            box1_confidence_loss += log_dict["valid_box1_confidence_loss"]
+            box1_cx_loss += log_dict["valid_box1_cx_loss"]
+            box1_cy_loss += log_dict["valid_box1_cy_loss"]
+            box1_width_loss += log_dict["valid_box1_width_loss"]
+            box1_height_loss += log_dict["valid_box1_height_loss"]
 
-        self.log(
-            name="valid/loss",
-            value=loss,
-            on_step=False,
-            on_epoch=True,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name="valid_loss",
-            value=loss,
-            on_step=False,
-            on_epoch=True,
-            prog_bar=False,
-            logger=True,
-        )
+            box2_confidence_loss += log_dict["valid_box2_confidence_loss"]
+            box2_cx_loss += log_dict["valid_box2_cx_loss"]
+            box2_cy_loss += log_dict["valid_box2_cy_loss"]
+            box2_width_loss += log_dict["valid_box2_width_loss"]
+            box2_height_loss += log_dict["valid_box2_height_loss"]
 
-    def logging_loss(self, loss, prefix: str = "train"):
-        total_loss = loss["total_loss"]
-        self.log(
-            name=f"{prefix}/loss",
-            value=total_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name=f"{prefix}_loss",
-            value=total_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
+            classes_loss += log_dict["valid_classes_loss"]
 
-        box1_confidence_loss = loss["obj_loss"]["confidence1_loss"]
-        self.log(
-            name=f"{prefix}/box1_confidence_loss",
-            value=box1_confidence_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name=f"{prefix}_box1_confidence_loss",
-            value=box1_confidence_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
+        loss /= num_of_outputs
+        box1_confidence_loss /= num_of_outputs
+        box1_cx_loss /= num_of_outputs
+        box1_cy_loss /= num_of_outputs
+        box1_width_loss /= num_of_outputs
+        box1_height_loss /= num_of_outputs
 
-        box1_cx_loss = loss["obj_loss"]["box1_cx_loss"]
-        self.log(
-            name=f"{prefix}/box1_cx_loss",
-            value=box1_cx_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name=f"{prefix}_box1_cx_loss",
-            value=box1_cx_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
+        box2_confidence_loss /= num_of_outputs
+        box2_cx_loss /= num_of_outputs
+        box2_cy_loss /= num_of_outputs
+        box2_width_loss /= num_of_outputs
+        box2_height_loss /= num_of_outputs
 
-        box1_cy_loss = loss["obj_loss"]["box1_cy_loss"]
-        self.log(
-            name=f"{prefix}/box1_cy_loss",
-            value=box1_cy_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name=f"{prefix}_box1_cy_loss",
-            value=box1_cy_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
+        classes_loss /= num_of_outputs
 
-        box1_width_loss = loss["obj_loss"]["box1_width_loss"]
-        self.log(
-            name=f"{prefix}/box1_width_loss",
-            value=box1_width_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name=f"{prefix}_box1_width_loss",
-            value=box1_width_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
+        self.log("valid_loss", loss, on_epoch=True, logger=True)
 
-        box1_height_loss = loss["obj_loss"]["box1_height_loss"]
-        self.log(
-            name=f"{prefix}/box1_height_loss",
-            value=box1_height_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name=f"{prefix}_box1_height_loss",
-            value=box1_height_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
+        self.log("valid_box1_confidence_loss", box1_confidence_loss, on_epoch=True, logger=True)
+        self.log("valid_box1_cx_loss", box1_cx_loss, on_epoch=True, logger=True)
+        self.log("valid_box1_cy_loss", box1_cy_loss, on_epoch=True, logger=True)
+        self.log("valid_box1_width_loss", box1_width_loss, on_epoch=True, logger=True)
+        self.log("valid_box1_height_loss", box1_height_loss, on_epoch=True, logger=True)
 
-        box2_confidence_loss = loss["obj_loss"]["confidence2_loss"]
-        self.log(
-            name=f"{prefix}/box2_confidence_loss",
-            value=box2_confidence_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name=f"{prefix}_box2_confidence_loss",
-            value=box2_confidence_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
+        self.log("valid_box2_confidence_loss", box2_confidence_loss, on_epoch=True, logger=True)
+        self.log("valid_box2_cx_loss", box2_cx_loss, on_epoch=True, logger=True)
+        self.log("valid_box2_cy_loss", box2_cy_loss, on_epoch=True, logger=True)
+        self.log("valid_box2_width_loss", box2_width_loss, on_epoch=True, logger=True)
+        self.log("valid_box2_height_loss", box2_height_loss, on_epoch=True, logger=True)
 
-        box2_cx_loss = loss["obj_loss"]["box2_cx_loss"]
-        self.log(
-            name=f"{prefix}/box2_cx_loss",
-            value=box2_cx_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name=f"{prefix}_box2_cx_loss",
-            value=box2_cx_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-
-        box2_cy_loss = loss["obj_loss"]["box2_cy_loss"]
-        self.log(
-            name=f"{prefix}/box2_cy_loss",
-            value=box2_cy_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name=f"{prefix}_box2_cy_loss",
-            value=box2_cy_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-
-        box2_width_loss = loss["obj_loss"]["box2_width_loss"]
-        self.log(
-            name=f"{prefix}/box2_width_loss",
-            value=box2_width_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name=f"{prefix}_box2_width_loss",
-            value=box2_width_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-
-        box2_height_loss = loss["obj_loss"]["box2_height_loss"]
-        self.log(
-            name=f"{prefix}/box2_height_loss",
-            value=box2_height_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name=f"{prefix}_box2_height_loss",
-            value=box2_height_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-
-        classes_loss = loss["obj_loss"]["classes_loss"]
-        self.log(
-            name=f"{prefix}/classes_loss",
-            value=classes_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
-        self.log(
-            name=f"{prefix}_classes_loss",
-            value=classes_loss,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=False,
-            logger=True,
-        )
+        self.log("valid_classes_loss", classes_loss, on_epoch=True, logger=True)

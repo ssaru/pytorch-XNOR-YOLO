@@ -113,11 +113,15 @@ def get_checkpoint_callback(log_dir: Path, config: DictConfig) -> Union[Callback
     logger.debug(f"{current_func_name} : log_dir->{log_dir}, config->{config}")
 
     checkpoint_prefix = f"{config.model.type}"
-    checkpoint_suffix = "_{epoch:02d}-{train_loss:.2f}-{val_loss:.2f}-{train_acc:.2f}-{val_acc:.2f}"
+    checkpoint_suffix = "_{epoch:02d}-{train_loss:.2f}-{val_loss:.2f}"
 
     checkpoint_path = log_dir.joinpath(checkpoint_prefix + checkpoint_suffix)
     checkpoint_callback = ModelCheckpoint(
-        filepath=checkpoint_path, save_top_k=2, save_weights_only=True, monitor="valid/loss", mode="min"
+        filepath=checkpoint_path,
+        save_top_k=2,
+        save_weights_only=True,
+        monitor="valid_loss",
+        mode="min",
     )
 
     return checkpoint_callback
