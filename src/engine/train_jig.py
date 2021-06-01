@@ -74,21 +74,21 @@ class TrainingContainer(LightningModule):
 
         classes_loss = loss_dict["obj_loss"]["classes_loss"]
 
-        self.log("train_loss", total_loss, on_step=True, logger=True, prog_bar=True)
+        self.log("train_loss", total_loss, on_step=True)
 
-        self.log("train_box1_confidence_loss", box1_confidence_loss, on_step=True, logger=True)
-        self.log("train_box1_cx_loss", box1_cx_loss, on_step=True, logger=True)
-        self.log("train_box1_cy_loss", box1_cy_loss, on_step=True, logger=True)
-        self.log("train_box1_width_loss", box1_width_loss, on_step=True, logger=True)
-        self.log("train_box1_height_loss", box1_height_loss, on_step=True, logger=True)
+        self.log("train_box1_confidence_loss", box1_confidence_loss, on_step=True)
+        self.log("train_box1_cx_loss", box1_cx_loss, on_step=True)
+        self.log("train_box1_cy_loss", box1_cy_loss, on_step=True)
+        self.log("train_box1_width_loss", box1_width_loss, on_step=True)
+        self.log("train_box1_height_loss", box1_height_loss, on_step=True)
 
-        self.log("train_box2_confidence_loss", box2_confidence_loss, on_step=True, logger=True)
-        self.log("train_box2_cx_loss", box2_cx_loss, on_step=True, logger=True)
-        self.log("train_box2_cy_loss", box2_cy_loss, on_step=True, logger=True)
-        self.log("train_box2_width_loss", box2_width_loss, on_step=True, logger=True)
-        self.log("train_box2_height_loss", box2_height_loss, on_step=True, logger=True)
+        self.log("train_box2_confidence_loss", box2_confidence_loss, on_step=True)
+        self.log("train_box2_cx_loss", box2_cx_loss, on_step=True)
+        self.log("train_box2_cy_loss", box2_cy_loss, on_step=True)
+        self.log("train_box2_width_loss", box2_width_loss, on_step=True)
+        self.log("train_box2_height_loss", box2_height_loss, on_step=True)
 
-        self.log("train_classes_loss", classes_loss, on_step=True, logger=True)
+        self.log("train_classes_loss", classes_loss, on_step=True)
 
         return {
             "loss": total_loss,
@@ -152,21 +152,21 @@ class TrainingContainer(LightningModule):
 
         classes_loss /= num_of_outputs
 
-        self.log("train_loss", loss, on_epoch=True, logger=True)
+        self.log("train_loss", loss, on_epoch=True)
 
-        self.log("train_box1_confidence_loss", box1_confidence_loss, on_epoch=True, logger=True)
-        self.log("train_box1_cx_loss", box1_cx_loss, on_epoch=True, logger=True)
-        self.log("train_box1_cy_loss", box1_cy_loss, on_epoch=True, logger=True)
-        self.log("train_box1_width_loss", box1_width_loss, on_epoch=True, logger=True)
-        self.log("train_box1_height_loss", box1_height_loss, on_epoch=True, logger=True)
+        self.log("train_box1_confidence_loss", box1_confidence_loss, on_epoch=True)
+        self.log("train_box1_cx_loss", box1_cx_loss, on_epoch=True)
+        self.log("train_box1_cy_loss", box1_cy_loss, on_epoch=True)
+        self.log("train_box1_width_loss", box1_width_loss, on_epoch=True)
+        self.log("train_box1_height_loss", box1_height_loss, on_epoch=True)
 
-        self.log("train_box2_confidence_loss", box2_confidence_loss, on_epoch=True, logger=True)
-        self.log("train_box2_cx_loss", box2_cx_loss, on_epoch=True, logger=True)
-        self.log("train_box2_cy_loss", box2_cy_loss, on_epoch=True, logger=True)
-        self.log("train_box2_width_loss", box2_width_loss, on_epoch=True, logger=True)
-        self.log("train_box2_height_loss", box2_height_loss, on_epoch=True, logger=True)
+        self.log("train_box2_confidence_loss", box2_confidence_loss, on_epoch=True)
+        self.log("train_box2_cx_loss", box2_cx_loss, on_epoch=True)
+        self.log("train_box2_cy_loss", box2_cy_loss, on_epoch=True)
+        self.log("train_box2_width_loss", box2_width_loss, on_epoch=True)
+        self.log("train_box2_height_loss", box2_height_loss, on_epoch=True)
 
-        self.log("train_classes_loss", classes_loss, on_epoch=True, logger=True)
+        self.log("train_classes_loss", classes_loss, on_epoch=True)
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
