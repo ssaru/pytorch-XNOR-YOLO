@@ -1,5 +1,8 @@
+import gc
+import os
 from typing import Tuple
 
+import psutil
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
@@ -60,19 +63,25 @@ class TrainingContainer(LightningModule):
         _, loss_dict = self.shared_step(x, y)
 
         total_loss = loss_dict["total_loss"]
-        box1_confidence_loss = loss_dict["obj_loss"]["confidence1_loss"]
-        box1_cx_loss = loss_dict["obj_loss"]["box1_cx_loss"]
-        box1_cy_loss = loss_dict["obj_loss"]["box1_cy_loss"]
-        box1_width_loss = loss_dict["obj_loss"]["box1_width_loss"]
-        box1_height_loss = loss_dict["obj_loss"]["box1_height_loss"]
+        box1_confidence_loss = loss_dict["obj_loss"].pop("confidence1_loss").cpu()
+        box1_cx_loss = loss_dict["obj_loss"].pop("box1_cx_loss").cpu()
+        box1_cy_loss = loss_dict["obj_loss"].pop("box1_cy_loss").cpu()
+        box1_width_loss = loss_dict["obj_loss"].pop("box1_width_loss").cpu()
+        box1_height_loss = loss_dict["obj_loss"].pop("box1_height_loss").cpu()
 
-        box2_confidence_loss = loss_dict["obj_loss"]["confidence2_loss"]
-        box2_cx_loss = loss_dict["obj_loss"]["box2_cx_loss"]
-        box2_cy_loss = loss_dict["obj_loss"]["box2_cy_loss"]
-        box2_width_loss = loss_dict["obj_loss"]["box2_width_loss"]
-        box2_height_loss = loss_dict["obj_loss"]["box2_height_loss"]
+        box2_confidence_loss = loss_dict["obj_loss"].pop("confidence2_loss").cpu()
+        box2_cx_loss = loss_dict["obj_loss"].pop("box2_cx_loss").cpu()
+        box2_cy_loss = loss_dict["obj_loss"].pop("box2_cy_loss").cpu()
+        box2_width_loss = loss_dict["obj_loss"].pop("box2_width_loss").cpu()
+        box2_height_loss = loss_dict["obj_loss"].pop("box2_height_loss").cpu()
 
-        classes_loss = loss_dict["obj_loss"]["classes_loss"]
+        classes_loss = loss_dict["obj_loss"].pop("classes_loss").cpu()
+
+        pid = os.getpid()
+        current_process = psutil.Process(pid)
+        current_process_memory_usage_as_MB = round(current_process.memory_info()[0] / 2.0 ** 20)
+
+        self.log("memory", current_process_memory_usage_as_MB, on_step=True, prog_bar=True)
 
         self.log("train_loss", total_loss, on_step=True)
 
@@ -168,24 +177,29 @@ class TrainingContainer(LightningModule):
 
         self.log("train_classes_loss", classes_loss, on_epoch=True)
 
+        for obj in gc.get_objects():
+            if torch.is_tensor(obj) or (hasattr(obj, "data") and torch.is_tensor(obj.data)):
+                del obj
+        torch.cuda.empty_cache()
+
     def validation_step(self, batch, batch_idx):
         x, y = batch
         _, loss_dict = self.shared_step(x, y)
 
         total_loss = loss_dict["total_loss"]
-        box1_confidence_loss = loss_dict["obj_loss"]["confidence1_loss"]
-        box1_cx_loss = loss_dict["obj_loss"]["box1_cx_loss"]
-        box1_cy_loss = loss_dict["obj_loss"]["box1_cy_loss"]
-        box1_width_loss = loss_dict["obj_loss"]["box1_width_loss"]
-        box1_height_loss = loss_dict["obj_loss"]["box1_height_loss"]
+        box1_confidence_loss = loss_dict["obj_loss"].pop("confidence1_loss")
+        box1_cx_loss = loss_dict["obj_loss"].pop("box1_cx_loss")
+        box1_cy_loss = loss_dict["obj_loss"].pop("box1_cy_loss")
+        box1_width_loss = loss_dict["obj_loss"].pop("box1_width_loss")
+        box1_height_loss = loss_dict["obj_loss"].pop("box1_height_loss")
 
-        box2_confidence_loss = loss_dict["obj_loss"]["confidence2_loss"]
-        box2_cx_loss = loss_dict["obj_loss"]["box2_cx_loss"]
-        box2_cy_loss = loss_dict["obj_loss"]["box2_cy_loss"]
-        box2_width_loss = loss_dict["obj_loss"]["box2_width_loss"]
-        box2_height_loss = loss_dict["obj_loss"]["box2_height_loss"]
+        box2_confidence_loss = loss_dict["obj_loss"].pop("confidence2_loss")
+        box2_cx_loss = loss_dict["obj_loss"].pop("box2_cx_loss")
+        box2_cy_loss = loss_dict["obj_loss"].pop("box2_cy_loss")
+        box2_width_loss = loss_dict["obj_loss"].pop("box2_width_loss")
+        box2_height_loss = loss_dict["obj_loss"].pop("box2_height_loss")
 
-        classes_loss = loss_dict["obj_loss"]["classes_loss"]
+        classes_loss = loss_dict["obj_loss"].pop("classes_loss")
 
         self.log("valid_loss", total_loss, on_step=True, logger=True)
 

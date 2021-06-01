@@ -117,7 +117,8 @@ def get_checkpoint_callback(log_dir: Path, config: DictConfig) -> Union[Callback
 
     checkpoint_path = log_dir.joinpath(checkpoint_prefix + checkpoint_suffix)
     checkpoint_callback = ModelCheckpoint(
-        filepath=checkpoint_path,
+        dirpath=".",
+        filename=checkpoint_path,
         save_top_k=2,
         save_weights_only=True,
         monitor="valid_loss",
