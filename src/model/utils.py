@@ -275,7 +275,7 @@ def soft_nms(dets, box_scores, sigma=0.5, thresh=0.001):
     # Return
         the index of the selected boxes
     """
-    
+    dets = dets.clone()
     # Indexes concatenate boxes with the last column
     N = dets.shape[0]
 

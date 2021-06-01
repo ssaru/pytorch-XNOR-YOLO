@@ -7,6 +7,8 @@ from torchsummary import summary as torch_summary
 
 from src.data.pascal_voc import VOC2012
 from src.model.detection_loss import yolo_loss
+from src.model.utils import get_boxes
+from src.model.detection_loss import yolotensor_to_xyxyabs
 from src.model.utils import Conv2dBlock, LinearBlock
 from src.utils import make_logger
 
@@ -76,9 +78,14 @@ class Yolo(nn.Module):
 
     def inference(self, x: torch.Tensor):
         # single inference
-        output_tensor = self(x)
+        pred_tensor = self(x)
         pred_boxes = yolotensor_to_xyxyabs(yolo_coord_output=pred_tensor, image_sizes=(self._width, self._height))
-        prediction = get_boxes(pred_boxes=pred_boxes, confidence_score=self._confidence)        
+        for boxes_info in pred_boxes:
+            box1_idx, box1, box2 = boxes_info
+            b, y, x = box1_idx
+            pred_tensor[b, y, x, 1:5] = box1
+            pred_tensor[b, y, x, 7:11] = box2                    
+        prediction = get_boxes(pred_tensor=pred_tensor, confidence_score=self._confidence)        
 
         return prediction
 
