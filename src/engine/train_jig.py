@@ -74,7 +74,7 @@ class TrainingContainer(LightningModule):
 
         classes_loss = loss_dict["obj_loss"]["classes_loss"]
 
-        self.log("train_loss", total_loss, on_step=True, logger=True)
+        self.log("train_loss", total_loss, on_step=True, logger=True, prog_bar=True)
 
         self.log("train_box1_confidence_loss", box1_confidence_loss, on_step=True, logger=True)
         self.log("train_box1_cx_loss", box1_cx_loss, on_step=True, logger=True)

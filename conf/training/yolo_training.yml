@@ -1,70 +1,70 @@
 hyperparameter:
-    # image 수: 11,540
-    batch_size: &batch_size 16
-    steps_per_epoch: &steps_per_epoch 721
-    lr: &lr 5e-4
-    optimizer: &optimizer SGD
-    momentum: &momentum 0.9
-    epoch: &max_epochs 40000
+  # image 수: 5717
+  batch_size: &batch_size 4
+  steps_per_epoch: &steps_per_epoch 1429
+  lr: &lr 5e-4
+  optimizer: &optimizer Adam
+  momentum: &momentum 0.9
+  epoch: &max_epochs 40000
 
 project: &project YOLO
 experiments: &title 1.yolo
 
 dataloader:
-    type: DataLoader
-    params:
-        num_workers: 10
-        batch_size: *batch_size
+  type: DataLoader
+  params:
+    num_workers: 24
+    batch_size: *batch_size
 
 scheduler:
-    type: OneCycleLR
-    params:
-        max_lr: 0.005
-        steps_per_epoch: *steps_per_epoch
-        epochs: *max_epochs
-        pct_start: 0.05
-        anneal_strategy: cos
+  type: OneCycleLR
+  params:
+    max_lr: 0.005
+    steps_per_epoch: *steps_per_epoch
+    epochs: *max_epochs
+    pct_start: 0.3
+    anneal_strategy: cos
 
 optimizer:
-    type: *optimizer
-    params:
-        lr: *lr
-        momentum: *momentum
-        weight_decay: 0.0005
+  type: *optimizer
+  params:
+    lr: *lr
+    # momentum: *momentum
+    # weight_decay: 0.0005
 
 runner:
-    type: TrainingContainer
+  type: TrainingContainer
 
-    trainer:
-        type: Trainer
-        params:
-            max_epochs: 40000
-            gpus: -1
-            accelerator: ddp
-            fast_dev_run: false
-            amp_level: "02"
-            weights_summary: top
-            reload_dataloaders_every_epoch: false
-            resume_from_checkpoint: null
-            benchmark: false
-            deterministic: true
-            num_sanity_val_steps: 5
-            overfit_batches: 0.0
-            precision: 32
-            profiler: true
+  trainer:
+    type: Trainer
+    params:
+      max_epochs: 40000
+      gpus: -1
+      accelerator: ddp
+      fast_dev_run: false
+      amp_level: "02"
+      weights_summary: top
+      reload_dataloaders_every_epoch: false
+      resume_from_checkpoint: null
+      benchmark: false
+      deterministic: true
+      num_sanity_val_steps: 5
+      overfit_batches: 0.0
+      precision: 32
+      profiler: true
 
-    earlystopping:
-        type: EarlyStopping
-        params:
-            monitor: valid_loss
-            mode: min
-            patience: 30
-            verbose: True
+  earlystopping:
+    type: EarlyStopping
+    params:
+      monitor: valid_loss
+      mode: min
+      patience: 30
+      verbose: True
 
-    experiments:
-        name: *title
-        project_name: *project
-        output_dir: output/runs
+  experiments:
+    name: *title
+    project_name: *project
+    output_dir: output/runs
 #scheduler:
 # type: StepLR
 # params:
