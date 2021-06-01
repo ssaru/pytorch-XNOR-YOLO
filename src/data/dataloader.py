@@ -28,14 +28,16 @@ def get_data_loaders(config: DictConfig) -> Tuple[DataLoader, DataLoader]:
         drop_last=True,
         shuffle=True,
     )
+
     args["year"] = "2007"
-    args["image_set"] = "val"
+    args["download"] = False
+    
     test_dataset = load_class(module=torchvision.datasets, name=config.data.dataset.type, args=args)
     test_dataloader = DataLoader(
         dataset=test_dataset,
         batch_size=config.dataloader.params.batch_size,
         num_workers=config.dataloader.params.num_workers,
         drop_last=False,
-        shuffle=False,
+        shuffle=True,
     )
     return train_dataloader, test_dataloader

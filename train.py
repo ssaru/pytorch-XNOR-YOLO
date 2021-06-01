@@ -83,7 +83,7 @@ def train(hparams: dict):
         overfit_batches=0.0,
         precision=32,
         limit_train_batches=1.0,
-        limit_val_batches=0.1,
+        limit_val_batches=0.3,
         profiler=profiler,
     )
     trainer.fit(
