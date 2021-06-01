@@ -1,36 +1,36 @@
 hyperparameter:
-  # image 수: 5717
-  batch_size: &batch_size 4
-  steps_per_epoch: &steps_per_epoch 1429
-  lr: &lr 5e-4
-  optimizer: &optimizer Adam
-  momentum: &momentum 0.9
-  epoch: &max_epochs 40000
+    # image 수: 5717
+    batch_size: &batch_size 4
+    steps_per_epoch: &steps_per_epoch 1429
+    lr: &lr 5e-4
+    optimizer: &optimizer Adam
+    momentum: &momentum 0.9
+    epoch: &max_epochs 40000
 
 project: &project YOLO
 experiments: &title 1.yolo
 
 dataloader:
-  type: DataLoader
-  params:
-    num_workers: 24
-    batch_size: *batch_size
+    type: DataLoader
+    params:
+        num_workers: 24
+        batch_size: *batch_size
 
 scheduler:
-  type: OneCycleLR
-  params:
-    max_lr: 0.005
-    steps_per_epoch: *steps_per_epoch
-    epochs: *max_epochs
-    pct_start: 0.3
-    anneal_strategy: cos
+    type: OneCycleLR
+    params:
+        max_lr: 0.005
+        steps_per_epoch: *steps_per_epoch
+        epochs: *max_epochs
+        pct_start: 0.3
+        anneal_strategy: cos
 
 optimizer:
   type: *optimizer
-  params:
-    lr: *lr
-    #momentum: *momentum
-    #weight_decay: 0.0005
+    params:
+        lr: *lr
+        #momentum: *momentum
+        #weight_decay: 0.0005
 
 runner:
     type: TrainingContainer
@@ -52,18 +52,18 @@ runner:
             precision: 32
             profiler: true
 
-  earlystopping:
-    type: EarlyStopping
-    params:
-      monitor: valid_loss
-      mode: min
-      patience: 30
-      verbose: True
+    earlystopping:
+        type: EarlyStopping
+        params:
+            monitor: valid_loss
+            mode: min
+            patience: 30
+            verbose: True
 
-  experiments:
-    name: *title
-    project_name: *project
-    output_dir: output/runs
+    experiments:
+        name: *title
+        project_name: *project
+        output_dir: output/runs
 #scheduler:
 # type: StepLR
 # params:
