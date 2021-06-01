@@ -99,20 +99,12 @@ class TrainingContainer(LightningModule):
 
         self.log("train_classes_loss", classes_loss, on_step=True)
 
+        del x
+        del y
+        del _
+
         return {
-            "loss": total_loss,
-            "train_loss": total_loss,
-            "train_box1_confidence_loss": box1_confidence_loss,
-            "train_box1_cx_loss": box1_cx_loss,
-            "train_box1_cy_loss": box1_cy_loss,
-            "train_box1_width_loss": box1_width_loss,
-            "train_box1_height_loss": box1_height_loss,
-            "train_box2_confidence_loss": box2_confidence_loss,
-            "train_box2_cx_loss": box2_cx_loss,
-            "train_box2_cy_loss": box2_cy_loss,
-            "train_box2_width_loss": box2_width_loss,
-            "train_box2_height_loss": box2_height_loss,
-            "train_classes_loss": classes_loss,
+            "loss": total_loss            
         }
 
     def training_epoch_end(self, training_step_outputs):
@@ -176,10 +168,7 @@ class TrainingContainer(LightningModule):
         self.log("train_box2_height_loss", box2_height_loss, on_epoch=True)
 
         self.log("train_classes_loss", classes_loss, on_epoch=True)
-
-        for obj in gc.get_objects():
-            if torch.is_tensor(obj) or (hasattr(obj, "data") and torch.is_tensor(obj.data)):
-                del obj
+        
         torch.cuda.empty_cache()
 
     def validation_step(self, batch, batch_idx):
@@ -217,20 +206,12 @@ class TrainingContainer(LightningModule):
 
         self.log("valid_classes_loss", classes_loss, on_step=True, logger=True)
 
+        del x
+        del y
+        del _
+
         return {
-            "loss": total_loss,
-            "valid_loss": total_loss,
-            "valid_box1_confidence_loss": box1_confidence_loss,
-            "valid_box1_cx_loss": box1_cx_loss,
-            "valid_box1_cy_loss": box1_cy_loss,
-            "valid_box1_width_loss": box1_width_loss,
-            "valid_box1_height_loss": box1_height_loss,
-            "valid_box2_confidence_loss": box2_confidence_loss,
-            "valid_box2_cx_loss": box2_cx_loss,
-            "valid_box2_cy_loss": box2_cy_loss,
-            "valid_box2_width_loss": box2_width_loss,
-            "valid_box2_height_loss": box2_height_loss,
-            "valid_classes_loss": classes_loss,
+            "loss": total_loss,            
         }
 
     def validation_epoch_end(self, validation_step_outputs):
