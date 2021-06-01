@@ -26,11 +26,11 @@ scheduler:
         anneal_strategy: cos
 
 optimizer:
-  type: *optimizer
-    params:
-        lr: *lr
-        #momentum: *momentum
-        #weight_decay: 0.0005
+    type: *optimizer
+        params:
+            lr: *lr
+            #momentum: *momentum
+            #weight_decay: 0.0005
 
 runner:
     type: TrainingContainer
