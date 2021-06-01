@@ -1,5 +1,6 @@
 from typing import Dict, Optional
 
+import torch
 import torch.nn as nn
 
 from src.nn.binarized_conv2d import BinarizedConv2d
@@ -227,3 +228,100 @@ class BinarizedConvBlock(nn.Module):
             x = self.pool(x)
 
         return x
+
+
+def get_boxes(pred_tensor: torch.Tensor, confidence_score: float = 0.3):    
+    boxes1 = pred_tensor[:,:,:,1:5] # shape: (n, 7, 7, 4)
+    boxes2 = pred_tensor[:,:,:,6:10] # shape: (n, 7, 7, 4)    
+    boxes = torch.cat([boxes1, boxes2]) # shape: (n+1, 7, 7, 4)
+
+    scores1 = pred_tensor[:,:,:,0] # shape: (n, 7, 7, 4)
+    scores2 = pred_tensor[:,:,:,5] # shape: (n, 7, 7, 4)    
+    scores = torch.cat([scores1, scores2]) # shape: (n+1, 7, 7, 1)
+    
+    classes = torch.argmax(pred_tensor[:,:,:,10:], dim=3).float()
+
+    reshaped_boxes = boxes.reshape(-1, 4) # input: (n, 4)
+    reshaped_scores = scores.reshape(-1) # input: (n, 1)
+    reshaped_classes = torch.cat([classes.reshape(-1), classes.reshape(-1)])    
+
+    indices = soft_nms(dets=reshaped_boxes, box_scores=reshaped_scores)
+
+    # TODO. index들이 모두 맞는지 확인해야함
+    prediction = []
+    for idx in indices:        
+        if confidence_score > reshaped_scores[idx]:
+            continue
+
+        pred_confidence = float(reshaped_scores[idx])
+        pred_box = reshaped_boxes[idx].int().tolist()
+        pred_classes = int(reshaped_classes[idx])
+        prediction.append([pred_confidence, pred_box, pred_classes])
+
+    return prediction
+
+
+def soft_nms(dets, box_scores, sigma=0.5, thresh=0.001):
+    """
+    Build a pytorch implement of Soft NMS algorithm.
+    refers: https://github.com/DocF/Soft-NMS/blob/master/softnms_pytorch.py
+    
+    # Augments
+        dets:        boxes coordinate tensor (format:[y1, x1, y2, x2])
+        box_scores:  box score tensors
+        sigma:       variance of Gaussian function
+        thresh:      score thresh
+        cuda:        CUDA flag
+    # Return
+        the index of the selected boxes
+    """
+    
+    # Indexes concatenate boxes with the last column
+    N = dets.shape[0]
+
+    cuda = True if "cuda" in str(dets.device) else False
+    if cuda:
+        indexes = torch.arange(0, N, dtype=torch.float).cuda().view(N, 1)
+    else:
+        indexes = torch.arange(0, N, dtype=torch.float).view(N, 1)
+    dets = torch.cat((dets, indexes), dim=1)
+
+    # The order of boxes coordinate is [y1,x1,y2,x2]
+    y1 = dets[:, 0]
+    x1 = dets[:, 1]
+    y2 = dets[:, 2]
+    x2 = dets[:, 3]
+    scores = box_scores
+    areas = (x2 - x1 + 1) * (y2 - y1 + 1)
+
+    for i in range(N):
+        # intermediate parameters for later parameters exchange
+        tscore = scores[i].clone()
+        pos = i + 1
+
+        if i != N - 1:
+            maxscore, maxpos = torch.max(scores[pos:], dim=0)
+            if tscore < maxscore:
+                dets[i], dets[maxpos.item() + i + 1] = dets[maxpos.item() + i + 1].clone(), dets[i].clone()
+                scores[i], scores[maxpos.item() + i + 1] = scores[maxpos.item() + i + 1].clone(), scores[i].clone()
+                areas[i], areas[maxpos + i + 1] = areas[maxpos + i + 1].clone(), areas[i].clone()
+
+        # IoU calculate
+        yy1 = torch.maximum(dets[i, 0], dets[pos:, 0])
+        xx1 = torch.maximum(dets[i, 1], dets[pos:, 1])
+        yy2 = torch.minimum(dets[i, 2], dets[pos:, 2])
+        xx2 = torch.minimum(dets[i, 3], dets[pos:, 3])
+        
+        w = torch.maximum(torch.tensor(0.0), xx2 - xx1 + 1)
+        h = torch.maximum(torch.tensor(0.0), yy2 - yy1 + 1)
+        inter = torch.tensor(w * h).cuda() if cuda else torch.tensor(w * h)
+        ovr = torch.div(inter, (areas[i] + areas[pos:] - inter))
+
+        # Gaussian decay
+        weight = torch.exp(-(ovr * ovr) / sigma)
+        scores[pos:] = weight * scores[pos:]
+
+    # select the boxes and keep the corresponding indexes
+    keep = dets[:, 4][scores > thresh].int()
+
+    return keep

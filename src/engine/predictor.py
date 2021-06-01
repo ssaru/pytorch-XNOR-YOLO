@@ -6,7 +6,7 @@ import torchvision
 from omegaconf import DictConfig
 from PIL import Image
 
-from src.model import net as Net
+from src import model as Net
 from src.utils import load_class
 
 
@@ -16,7 +16,7 @@ def build_model(model_conf: DictConfig):
 
 class Predictor(torch.nn.Module):
     def __init__(self, config: DictConfig) -> None:
-        """Model Container for Training
+        """Model Container for predict
 
         Args:
             model (nn.Module): model for train
@@ -29,7 +29,8 @@ class Predictor(torch.nn.Module):
         self.model: nn.Module = build_model(model_conf=config.model)
 
     def forward(self, x):
-        return self.model.single_inference(x)
+        return self.model.inference(x)
 
     def preprocess(self, image: Image):
+        image = image.resize((448,448))        
         return torchvision.transforms.ToTensor()(image).unsqueeze(0)

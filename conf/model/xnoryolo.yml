@@ -2,6 +2,7 @@ model:
   type: XnorNetYolo
 
   params:
+    confidence: 0.3
     width: 448
     height: 448
     channels: &in_channels 3

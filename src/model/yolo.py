@@ -27,6 +27,7 @@ class Yolo(nn.Module):
 
         self.class_map = VOC2012()
 
+        self._confidence = model_config.params.confidence
         self._width: int = model_config.params.width
         self._height: int = model_config.params.height
         self._channels: int = model_config.params.channels
@@ -63,6 +64,10 @@ class Yolo(nn.Module):
                 x = linear_layer(x)
 
         x = x.view(-1, 7, 7, 30)
+        
+        x[:,:,:,0] = torch.sigmoid(x[:,:,:,0])        
+        x[:,:,:,5] = torch.sigmoid(x[:,:,:,0])
+        x[:,:,:,10:] = torch.sigmoid(x[:,:,:,10:])
 
         return x
 
@@ -70,11 +75,12 @@ class Yolo(nn.Module):
         return self.loss_fn(pred_tensor=pred_tensor, target_tensor=target_tensor, image_sizes=image_sizes)
 
     def inference(self, x: torch.Tensor):
-        outputs = self.batch_inference(x)
-        # TODO. batch processing을 염두에 두어야함
-        detection_boxes = self.post_processing(x=outputs)
+        # single inference
+        output_tensor = self(x)
+        pred_boxes = yolotensor_to_xyxyabs(yolo_coord_output=pred_tensor, image_sizes=(self._width, self._height))
+        prediction = get_boxes(pred_boxes=pred_boxes, confidence_score=self._confidence)        
 
-        return detection_boxes
+        return prediction
 
     def post_processing(self, x: torch.Tensor):
         raise NotImplementedError()
