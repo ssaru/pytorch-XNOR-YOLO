@@ -171,6 +171,21 @@ class TrainingContainer(LightningModule):
         
         torch.cuda.empty_cache()
 
+        del box1_confidence_loss
+        del box1_cx_loss 
+        del box1_cy_loss 
+        del box1_width_loss 
+        del box1_height_loss 
+
+        del box2_confidence_loss 
+        del box2_cx_loss 
+        del box2_cy_loss 
+        del box2_width_loss 
+        del box2_height_loss 
+
+        for _, item in log_dict.items():
+            del item        
+
     def validation_step(self, batch, batch_idx):
         x, y = batch
         _, loss_dict = self.shared_step(x, y)
@@ -276,3 +291,18 @@ class TrainingContainer(LightningModule):
         self.log("valid_box2_height_loss", box2_height_loss, on_epoch=True, logger=True)
 
         self.log("valid_classes_loss", classes_loss, on_epoch=True, logger=True)
+
+        del box1_confidence_loss
+        del box1_cx_loss 
+        del box1_cy_loss 
+        del box1_width_loss 
+        del box1_height_loss 
+
+        del box2_confidence_loss 
+        del box2_cx_loss 
+        del box2_cy_loss 
+        del box2_width_loss 
+        del box2_height_loss 
+
+        for _, item in log_dict.items():
+            del item
