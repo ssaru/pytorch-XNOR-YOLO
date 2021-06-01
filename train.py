@@ -39,12 +39,13 @@ def train(hparams: dict):
     OmegaConf.set_readonly(config, False)
     for key, value in config.hyperparameter.items():
         config.runner.experiments.name += "-" + str(key) + "_" + str(value)
-    OmegaConf.set_readonly(config, True)
 
     log_dir = get_log_dir(config=config)
     log_dir.mkdir(parents=True, exist_ok=True)
 
     train_dataloader, test_dataloader = get_data_loaders(config=config)
+    config.scheduler.params.steps_per_epoch = len(train_dataloader)
+    print(f"`steps_per_epoch` is : {config.scheduler.params.steps_per_epoch}")
 
     model: nn.Module = build_model(model_conf=config.model)
     model.summary()
@@ -53,7 +54,7 @@ def train(hparams: dict):
 
     checkpoint_callback = get_checkpoint_callback(log_dir=log_dir, config=config)
     wandb_logger = get_wandb_logger(log_dir=log_dir, config=config)
-    wandb_logger.watch(model, log="gradients", log_freq=100)
+    # wandb_logger.watch(model, log="gradients", log_freq=100)
 
     lr_logger = LearningRateMonitor()
     early_stop_callback = get_early_stopper(early_stopping_config=config.runner.earlystopping.params)
@@ -64,6 +65,7 @@ def train(hparams: dict):
         OmegaConf.save(config=config, f=f)
 
     trainer = Trainer(
+        log_every_n_steps=1,
         accelerator=config.runner.trainer.distributed_backend,
         fast_dev_run=False,
         gpus=config.runner.trainer.params.gpus,
