@@ -39,7 +39,7 @@ runner:
     type: Trainer
     params:
       max_epochs: 40000
-      gpus: -1
+      gpus: 1
       accelerator: ddp
       fast_dev_run: false
       amp_level: "02"
