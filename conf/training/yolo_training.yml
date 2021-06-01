@@ -27,14 +27,14 @@ scheduler:
 
 optimizer:
   type: *optimizer
-    params:
-      lr: *lr
-      #momentum: *momentum
-      #weight_decay: 0.0005
+  params:
+    lr: *lr
+    #momentum: *momentum
+    #weight_decay: 0.0005
 
 runner:
   type: TrainingContainer
-  
+
   trainer:
     type: Trainer
     params:
