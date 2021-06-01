@@ -29,29 +29,28 @@ optimizer:
   type: *optimizer
   params:
     lr: *lr
-    # momentum: *momentum
-    # weight_decay: 0.0005
+    #momentum: *momentum
+    #weight_decay: 0.0005
 
 runner:
-  type: TrainingContainer
-
-  trainer:
-    type: Trainer
-    params:
-      max_epochs: 40000
-      gpus: -1
-      accelerator: ddp
-      fast_dev_run: false
-      amp_level: "02"
-      weights_summary: top
-      reload_dataloaders_every_epoch: false
-      resume_from_checkpoint: null
-      benchmark: false
-      deterministic: true
-      num_sanity_val_steps: 5
-      overfit_batches: 0.0
-      precision: 32
-      profiler: true
+    type: TrainingContainer
+    trainer:
+        type: Trainer
+        params:
+            max_epochs: 40000
+            gpus: -1
+            accelerator: ddp
+            fast_dev_run: false
+            amp_level: "02"
+            weights_summary: top
+            reload_dataloaders_every_epoch: false
+            resume_from_checkpoint: null
+            benchmark: false
+            deterministic: true
+            num_sanity_val_steps: 5
+            overfit_batches: 0.0
+            precision: 32
+            profiler: true
 
   earlystopping:
     type: EarlyStopping
