@@ -122,20 +122,6 @@ class TrainingContainer(LightningModule):
         for log_dict in training_step_outputs:
             loss += log_dict["loss"]
 
-            box1_confidence_loss += log_dict["train_box1_confidence_loss"]
-            box1_cx_loss += log_dict["train_box1_cx_loss"]
-            box1_cy_loss += log_dict["train_box1_cy_loss"]
-            box1_width_loss += log_dict["train_box1_width_loss"]
-            box1_height_loss += log_dict["train_box1_height_loss"]
-
-            box2_confidence_loss += log_dict["train_box2_confidence_loss"]
-            box2_cx_loss += log_dict["train_box2_cx_loss"]
-            box2_cy_loss += log_dict["train_box2_cy_loss"]
-            box2_width_loss += log_dict["train_box2_width_loss"]
-            box2_height_loss += log_dict["train_box2_height_loss"]
-
-            classes_loss += log_dict["train_classes_loss"]
-
         loss /= num_of_outputs
 
         self.log("train_loss", loss, on_epoch=True)
