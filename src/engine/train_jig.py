@@ -103,9 +103,7 @@ class TrainingContainer(LightningModule):
         del y
         del _
 
-        return {
-            "loss": total_loss            
-        }
+        return {"loss": total_loss}
 
     def training_epoch_end(self, training_step_outputs):
         loss = 0
@@ -139,52 +137,13 @@ class TrainingContainer(LightningModule):
             classes_loss += log_dict["train_classes_loss"]
 
         loss /= num_of_outputs
-        box1_confidence_loss /= num_of_outputs
-        box1_cx_loss /= num_of_outputs
-        box1_cy_loss /= num_of_outputs
-        box1_width_loss /= num_of_outputs
-        box1_height_loss /= num_of_outputs
-
-        box2_confidence_loss /= num_of_outputs
-        box2_cx_loss /= num_of_outputs
-        box2_cy_loss /= num_of_outputs
-        box2_width_loss /= num_of_outputs
-        box2_height_loss /= num_of_outputs
-
-        classes_loss /= num_of_outputs
 
         self.log("train_loss", loss, on_epoch=True)
 
-        self.log("train_box1_confidence_loss", box1_confidence_loss, on_epoch=True)
-        self.log("train_box1_cx_loss", box1_cx_loss, on_epoch=True)
-        self.log("train_box1_cy_loss", box1_cy_loss, on_epoch=True)
-        self.log("train_box1_width_loss", box1_width_loss, on_epoch=True)
-        self.log("train_box1_height_loss", box1_height_loss, on_epoch=True)
-
-        self.log("train_box2_confidence_loss", box2_confidence_loss, on_epoch=True)
-        self.log("train_box2_cx_loss", box2_cx_loss, on_epoch=True)
-        self.log("train_box2_cy_loss", box2_cy_loss, on_epoch=True)
-        self.log("train_box2_width_loss", box2_width_loss, on_epoch=True)
-        self.log("train_box2_height_loss", box2_height_loss, on_epoch=True)
-
-        self.log("train_classes_loss", classes_loss, on_epoch=True)
-        
-        torch.cuda.empty_cache()
-
-        del box1_confidence_loss
-        del box1_cx_loss 
-        del box1_cy_loss 
-        del box1_width_loss 
-        del box1_height_loss 
-
-        del box2_confidence_loss 
-        del box2_cx_loss 
-        del box2_cy_loss 
-        del box2_width_loss 
-        del box2_height_loss 
-
         for _, item in log_dict.items():
-            del item        
+            del item
+
+        torch.cuda.empty_cache()
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
@@ -226,83 +185,22 @@ class TrainingContainer(LightningModule):
         del _
 
         return {
-            "loss": total_loss,            
+            "loss": total_loss,
         }
 
     def validation_epoch_end(self, validation_step_outputs):
         loss = 0
-
-        box1_confidence_loss = 0
-        box1_cx_loss, box1_cy_loss = 0, 0
-        box1_width_loss, box1_height_loss = 0, 0
-
-        box2_confidence_loss = 0
-        box2_cx_loss, box2_cy_loss = 0, 0
-        box2_width_loss, box2_height_loss = 0, 0
-
-        classes_loss = 0
 
         num_of_outputs = len(validation_step_outputs)
 
         for log_dict in validation_step_outputs:
             loss += log_dict["loss"]
 
-            box1_confidence_loss += log_dict["valid_box1_confidence_loss"]
-            box1_cx_loss += log_dict["valid_box1_cx_loss"]
-            box1_cy_loss += log_dict["valid_box1_cy_loss"]
-            box1_width_loss += log_dict["valid_box1_width_loss"]
-            box1_height_loss += log_dict["valid_box1_height_loss"]
-
-            box2_confidence_loss += log_dict["valid_box2_confidence_loss"]
-            box2_cx_loss += log_dict["valid_box2_cx_loss"]
-            box2_cy_loss += log_dict["valid_box2_cy_loss"]
-            box2_width_loss += log_dict["valid_box2_width_loss"]
-            box2_height_loss += log_dict["valid_box2_height_loss"]
-
-            classes_loss += log_dict["valid_classes_loss"]
-
         loss /= num_of_outputs
-        box1_confidence_loss /= num_of_outputs
-        box1_cx_loss /= num_of_outputs
-        box1_cy_loss /= num_of_outputs
-        box1_width_loss /= num_of_outputs
-        box1_height_loss /= num_of_outputs
-
-        box2_confidence_loss /= num_of_outputs
-        box2_cx_loss /= num_of_outputs
-        box2_cy_loss /= num_of_outputs
-        box2_width_loss /= num_of_outputs
-        box2_height_loss /= num_of_outputs
-
-        classes_loss /= num_of_outputs
 
         self.log("valid_loss", loss, on_epoch=True, logger=True)
 
-        self.log("valid_box1_confidence_loss", box1_confidence_loss, on_epoch=True, logger=True)
-        self.log("valid_box1_cx_loss", box1_cx_loss, on_epoch=True, logger=True)
-        self.log("valid_box1_cy_loss", box1_cy_loss, on_epoch=True, logger=True)
-        self.log("valid_box1_width_loss", box1_width_loss, on_epoch=True, logger=True)
-        self.log("valid_box1_height_loss", box1_height_loss, on_epoch=True, logger=True)
-
-        self.log("valid_box2_confidence_loss", box2_confidence_loss, on_epoch=True, logger=True)
-        self.log("valid_box2_cx_loss", box2_cx_loss, on_epoch=True, logger=True)
-        self.log("valid_box2_cy_loss", box2_cy_loss, on_epoch=True, logger=True)
-        self.log("valid_box2_width_loss", box2_width_loss, on_epoch=True, logger=True)
-        self.log("valid_box2_height_loss", box2_height_loss, on_epoch=True, logger=True)
-
-        self.log("valid_classes_loss", classes_loss, on_epoch=True, logger=True)
-
-        del box1_confidence_loss
-        del box1_cx_loss 
-        del box1_cy_loss 
-        del box1_width_loss 
-        del box1_height_loss 
-
-        del box2_confidence_loss 
-        del box2_cx_loss 
-        del box2_cy_loss 
-        del box2_width_loss 
-        del box2_height_loss 
-
         for _, item in log_dict.items():
             del item
+
+        torch.cuda.empty_cache()
