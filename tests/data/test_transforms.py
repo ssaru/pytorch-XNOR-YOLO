@@ -25,7 +25,7 @@ def test_transforms(ready_images):
 
     assert isinstance(image, torch.Tensor)
     assert isinstance(target, torch.Tensor)
-    assert target.shape == (7, 7, 30)
+    assert target.shape == (7, 7, 31)
 
 
 xyxyabs_testcase = [([10, 10, 50, 100], [300, 300], torch.tensor([0.1, 0.1833, 0.1333, 0.3]))]
@@ -52,8 +52,9 @@ build_label_testcase = [
                     0.1833,
                     0.1333,
                     0.3,
-                    1,
                     0,
+                    0,
+                    1,
                     0,
                     0,
                     0,
@@ -84,7 +85,8 @@ def test_build_label_tensor(xywhrel_boxes):
     current_func_name = sys._getframe().f_code.co_name
     logger = make_logger(name=current_func_name)
 
-    expected_label_tensor = torch.zeros((7, 7, 30))
+    expected_label_tensor = torch.zeros((7, 7, 31))
+    logger.info(f"shape of expected_label_tensor: {expected_label_tensor.shape}")
     dx, dy = 1 / 7, 1 / 7
 
     objectness = 1
@@ -110,5 +112,5 @@ def test_build_label_tensor(xywhrel_boxes):
 
     logger.info(f"label tensor: {label_tensor.shape}: {label_tensor[obj_cell_y][obj_cell_x]}")
 
-    assert label_tensor.shape == (7, 7, 30)
+    assert label_tensor.shape == (7, 7, 31)
     assert torch.allclose(label_tensor, expected_label_tensor, rtol=1e-04, atol=1e-04)

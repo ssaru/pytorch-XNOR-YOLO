@@ -30,7 +30,7 @@ test_yololoss_testcase = [
                 0.01,
                 0.10,
                 0.10,
-                *F.one_hot(torch.tensor(2), 20).tolist(),
+                *F.one_hot(torch.tensor(2), 21).tolist(),
             ],
         ),
         (
@@ -46,7 +46,7 @@ test_yololoss_testcase = [
                 0.02,
                 0.08,
                 0.08,
-                *F.one_hot(torch.tensor(2), 20).tolist(),
+                *F.one_hot(torch.tensor(2), 21).tolist(),
             ],
         ),
     ),
@@ -56,8 +56,8 @@ test_yololoss_testcase = [
 @pytest.mark.parametrize("target_info, output_info", test_yololoss_testcase)
 def test_calc_yolo_loss(target_info, output_info):
 
-    target_dummy = torch.zeros((1, 7, 7, 30), dtype=torch.float32)
-    output_dummy = torch.zeros((1, 7, 7, 30), dtype=torch.float32)
+    target_dummy = torch.zeros((1, 7, 7, 31), dtype=torch.float32)
+    output_dummy = torch.zeros((1, 7, 7, 31), dtype=torch.float32)
 
     x, y = target_info[0]
     target_obj_block = torch.tensor(target_info[1], dtype=torch.float32)
@@ -170,7 +170,7 @@ test_yolotensor_to_xyxyabs_testcase = [
                 0.02,
                 0.08,
                 0.08,
-                *F.one_hot(torch.tensor(2), 20).tolist(),
+                *F.one_hot(torch.tensor(2), 21).tolist(),
             ],
             (300, 300),
         ),
@@ -191,7 +191,7 @@ def test_yolotensor_to_xyxyabs(output_info, expected_info):
 
     image_sizes = output_info[2]
 
-    output_dummy = torch.zeros((1, 7, 7, 30), dtype=torch.float32)
+    output_dummy = torch.zeros((1, 7, 7, 31), dtype=torch.float32)
     output_obj_block = torch.tensor(output_info[1], dtype=torch.float32)
     output_dummy[0, y, x, :] = output_obj_block
     logger.info(f"shape of output: {output_dummy.shape}")
@@ -241,7 +241,7 @@ test_calc_confidence_testcase = [
                         0.01,
                         0.10,
                         0.10,
-                        *F.one_hot(torch.tensor(2), 20).tolist(),
+                        *F.one_hot(torch.tensor(2), 21).tolist(),
                     ],
                 ]
             ]
@@ -260,7 +260,7 @@ test_calc_confidence_testcase = [
                     0.38366,
                     0.0576,
                     0.019333,
-                    *F.one_hot(torch.tensor(2), 20).tolist(),
+                    *F.one_hot(torch.tensor(2), 21).tolist(),
                 ],
             ],
             [
@@ -276,7 +276,7 @@ test_calc_confidence_testcase = [
                     0.06,
                     0.20,
                     0.20,
-                    *F.one_hot(torch.tensor(2), 20).tolist(),
+                    *F.one_hot(torch.tensor(2), 21).tolist(),
                 ],
             ],
         ),
@@ -295,7 +295,7 @@ test_calc_confidence_testcase = [
                     0.06,
                     0.20,
                     0.20,
-                    *F.one_hot(torch.tensor(2), 20).tolist(),
+                    *F.one_hot(torch.tensor(2), 21).tolist(),
                 ],
             ],
             [
@@ -311,7 +311,7 @@ test_calc_confidence_testcase = [
                     0.38366,
                     0.0576,
                     0.019333,
-                    *F.one_hot(torch.tensor(2), 20).tolist(),
+                    *F.one_hot(torch.tensor(2), 21).tolist(),
                 ],
             ],
         ),
@@ -321,14 +321,14 @@ test_calc_confidence_testcase = [
 
 @pytest.mark.parametrize("target_infos, output_infos, image_sizes, expected_infos", test_calc_confidence_testcase)
 def test_calc_confidence(target_infos, output_infos, image_sizes, expected_infos):
-    target_dummy = torch.zeros((1, 7, 7, 30), dtype=torch.float32)
+    target_dummy = torch.zeros((1, 7, 7, 31), dtype=torch.float32)
     for target_info in target_infos:
         x, y = target_info[0]
         target_obj_block = torch.tensor(target_info[1], dtype=torch.float32)
         target_dummy[0, y, x, :] = target_obj_block
     logger.info(f"shape of target: {target_dummy.shape}")
 
-    output_dummy = torch.zeros((1, 7, 7, 30), dtype=torch.float32)
+    output_dummy = torch.zeros((1, 7, 7, 31), dtype=torch.float32)
     logger.info(f"type: {type(output_infos)}, len: {len(output_infos)}")
     logger.info(f"type: {type(output_infos[0])}, inside: {output_infos[0]}")
     for output_info in output_infos:
@@ -338,7 +338,7 @@ def test_calc_confidence(target_infos, output_infos, image_sizes, expected_infos
         output_dummy[0, y, x, :] = output_obj_block
     logger.info(f"shape of output: {output_dummy.shape}")
 
-    expected_dummy = torch.zeros((1, 7, 7, 30), dtype=torch.float32)
+    expected_dummy = torch.zeros((1, 7, 7, 31), dtype=torch.float32)
     for expected_info in expected_infos:
         x, y = expected_info[0]
         target_obj_block = torch.tensor(expected_info[1], dtype=torch.float32)

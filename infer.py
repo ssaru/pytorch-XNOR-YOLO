@@ -3,14 +3,19 @@ Usage:
     main.py predict [options] [--config=<model config path>] [--weights-filepath=<weights file path>] [--image-path=<image path>]
     main.py predict (-h | --help)
 Options:
-    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/YOLO/config.yaml] [type: path]
-    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/YOLO/Yolo_epoch=00-train_loss=15.14-val_loss=0.00.ckpt] [type: path]
+    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/XNOR-YOLO/config.yaml] [type: path]
+    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/XNOR-YOLO/XnorNetYolo_epoch=07-train_loss=10.80-val_loss=0.00.ckpt] [type: path]
     --image-path <image path> Path to image filepath for inference  [default: data/VOCdevkit/VOC2012/JPEGImages/2012_003028.jpg]
             
     -h --help  Show this.
 """
+#    YOLO
+#    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/YOLO/config.yaml] [type: path]
+#    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/YOLO/Yolo_epoch=05-train_loss=7.16-val_loss=0.00.ckpt] [type: path]
+#
+#    XNOR-YOLO
 #    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/XNOR-YOLO/config.yaml] [type: path]
-#    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/XNOR-YOLO/XnorNetYolo_epoch=00-train_loss=5.87-val_loss=0.00.ckpt] [type: path]    
+#    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/XNOR-YOLO/XnorNetYolo_epoch=07-train_loss=10.80-val_loss=0.00.ckpt] [type: path]    
 
 import pytorch_lightning
 import torch
@@ -54,5 +59,3 @@ def infer(hparams: dict):
         draw.text((xmin, ymin), classes)
 
     pil_image.save("prediction.png")
-
-

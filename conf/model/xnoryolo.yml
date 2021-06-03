@@ -385,7 +385,7 @@ model:
           dropout: null
 
         - in_feature: 4096
-          out_feature: 1470
+          out_feature: 1519
           bias: true
           batch_norm: true
           activation: false

@@ -65,7 +65,7 @@ class XnorNetYolo(nn.Module):
             for linear_layer in self.linear_layers:
                 x = linear_layer(x)
 
-        x = x.view(-1, 7, 7, 30)
+        x = x.view(-1, 7, 7, 31)
 
         x[:,:,:,0] = torch.sigmoid(x[:,:,:,0])        
         x[:,:,:,5] = torch.sigmoid(x[:,:,:,0])

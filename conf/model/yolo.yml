@@ -375,7 +375,7 @@ model:
             args: { "p": 0.5 }
 
         - in_feature: 4096
-          out_feature: 1470
+          out_feature: 1519
           bias: true
           batch_norm: false
           activation: null

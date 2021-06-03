@@ -34,8 +34,8 @@ def calc_nonobj_loss(output: torch.Tensor, target: torch.Tensor) -> dict:
 
 def calc_yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor) -> dict:
     """
-    output: (n1, 7, 7, 30)
-    label: (n2, 7, 7, 30), where n1==n2
+    output: (n1, 7, 7, 31)
+    label: (n2, 7, 7, 31), where n1==n2
 
     iou^{truth}_{pred} * Pr(Object)값이 왔다고 가정한다.
     pred_width, pred_height값이 음수일 때, sqrt가 에러가 날 수 있으므로,
@@ -45,7 +45,7 @@ def calc_yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor) -> di
     lambda_obj = 5.0
     lambda_noobj = 0.5
 
-    obj_mask = torch.stack([target_tensor[:, :, :, 0] for _ in range(30)], dim=3)
+    obj_mask = torch.stack([target_tensor[:, :, :, 0] for _ in range(31)], dim=3)
     noobj_mask = torch.neg(obj_mask - 1)
 
     logger.info(f"shape of obj_mask : {obj_mask.shape}, shape of noobj_mask: {noobj_mask.shape}")

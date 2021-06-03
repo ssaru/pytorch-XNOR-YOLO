@@ -92,7 +92,7 @@ def build_label_tensor(xywhrel_boxes: torch.Tensor) -> torch.Tensor:
     num_boxes = xywhrel_boxes.shape[0]
 
     dx, dy = 1 / 7, 1 / 7
-    label_tensor = torch.zeros((7, 7, 30))
+    label_tensor = torch.zeros((7, 7, 31))
 
     for i in range(num_boxes):
         objectness = 1
