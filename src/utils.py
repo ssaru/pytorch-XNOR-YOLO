@@ -100,7 +100,9 @@ def get_log_dir(config: DictConfig) -> Path:
     current_func_name = sys._getframe().f_code.co_name
     logger.debug(f"{current_func_name} : config -> {config}")
 
-    root_dir = Path(config.runner.experiments.output_dir) / Path(config.runner.experiments.project_name)
+    root_dir = Path(config.runner.experiments.output_dir) / Path(
+        config.runner.experiments.project_name
+    )
     next_version = get_next_version(root_dir)
     run_dir = root_dir.joinpath(next_version)
 
@@ -117,9 +119,9 @@ def get_checkpoint_callback(log_dir: Path, config: DictConfig) -> Union[Callback
 
     checkpoint_path = log_dir.joinpath(checkpoint_prefix + checkpoint_suffix)
     checkpoint_callback = ModelCheckpoint(
-        filepath=checkpoint_path,        
+        filepath=checkpoint_path,
         save_top_k=5,
-        save_weights_only=True,
+        save_weights_only=False,
         monitor="valid_loss",
         mode="min",
     )

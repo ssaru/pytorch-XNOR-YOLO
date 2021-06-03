@@ -6,12 +6,14 @@ Options:
     --dataset-config <dataset config path>  Path to YAML file for dataset configuration  [default: conf/data/data.yml] [type: path]
     --model-config <model config path>  Path to YAML file for model configuration  [default: conf/model/xnoryolo.yml] [type: path]
     --runner-config <runner config path>  Path to YAML file for model configuration  [default: conf/training/xnoryolo_training.yml] [type: path]
+    --checkpoint-path <checkpoint path>  Path to model weight for resume  [default: None] [type: path]
     -h --help  Show this.
 """
 
 from pathlib import Path
 
 import pytorch_lightning as pl
+import torch
 import torch.nn as nn
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Trainer
@@ -34,6 +36,8 @@ from src.utils import (
 def train(hparams: dict):
     config_list = ["--dataset-config", "--model-config", "--runner-config"]
     config: DictConfig = get_config(hparams=hparams, options=config_list)
+    checkpoint_path = str(hparams.get("--checkpoint-path"))
+    checkpoint_path = checkpoint_path if (checkpoint_path != "None") else None
 
     # TODO. 임시방편
     OmegaConf.set_readonly(config, False)
@@ -57,7 +61,9 @@ def train(hparams: dict):
     # wandb_logger.watch(model, log="gradients", log_freq=100)
 
     lr_logger = LearningRateMonitor()
-    early_stop_callback = get_early_stopper(early_stopping_config=config.runner.earlystopping.params)
+    early_stop_callback = get_early_stopper(
+        early_stopping_config=config.runner.earlystopping.params
+    )
 
     profiler = SimpleProfiler(output_filename="perf.txt")
 
@@ -76,7 +82,7 @@ def train(hparams: dict):
         max_epochs=config.runner.trainer.params.max_epochs,
         weights_summary="top",
         reload_dataloaders_every_epoch=False,
-        resume_from_checkpoint=None,
+        resume_from_checkpoint=checkpoint_path,
         benchmark=False,
         deterministic=True,
         num_sanity_val_steps=0,
@@ -86,8 +92,10 @@ def train(hparams: dict):
         limit_val_batches=0.3,
         profiler=profiler,
     )
+
     trainer.fit(
         model=training_container,
         train_dataloader=train_dataloader,
         val_dataloaders=test_dataloader,
     )
+    trainer.save_checkpoint("final.ckpt")
