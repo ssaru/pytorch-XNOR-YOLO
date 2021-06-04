@@ -237,6 +237,9 @@ def get_boxes(pred_tensor: torch.Tensor, confidence_score: float = 0.3):
     unique = torch.unique(classes)    
     
     for specific_class in unique:
+        is_background = (specific_class == 0)
+        if is_background:
+            continue
         indices = torch.where(classes==specific_class)
 
         boxes, scores = [], []        
@@ -253,9 +256,7 @@ def get_boxes(pred_tensor: torch.Tensor, confidence_score: float = 0.3):
                 
         if (len(boxes) == 0) or (len(scores) == 0):
             continue
-    
-        # logger.debug(f"len boxes: {len(boxes)}, len scores: {len(scores)}")
-        # print(f"len boxes: {len(boxes)}, len scores: {len(scores)}")
+            
 
         boxes = torch.stack(boxes)
         scores = torch.stack(scores)
