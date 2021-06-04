@@ -1,14 +1,15 @@
 hyperparameter:
     # image 수: 5717
-    batch_size: &batch_size 4
-    steps_per_epoch: &steps_per_epoch 1429
-    lr: &lr 5e-4
+    batch_size: &batch_size 24
+    #steps_per_epoch: &steps_per_epoch 1429
+    lr: &lr 5e-3
     optimizer: &optimizer Adam
-    momentum: &momentum 0.9
+    gamma: &gamma 0.3
+    #momentum: &momentum 0.9
     epoch: &max_epochs 40000
 
 project: &project YOLO
-experiments: &title 1.yolo
+experiments: &title 1.yolo(DGX)
 
 dataloader:
     type: DataLoader
@@ -17,13 +18,10 @@ dataloader:
         batch_size: *batch_size
 
 scheduler:
-    type: OneCycleLR
+    type: ExponentialLR
     params:
-        max_lr: 0.005
-        steps_per_epoch: *steps_per_epoch
-        epochs: *max_epochs
-        pct_start: 0.3
-        anneal_strategy: cos
+        gamma: *gamma
+        last_epoch: -1
 
 optimizer:
     type: *optimizer
@@ -39,7 +37,7 @@ runner:
         type: Trainer
         params:
             max_epochs: *max_epochs
-            gpus: 1
+            gpus: -1
             accelerator: ddp
             fast_dev_run: false
             amp_level: "02"
@@ -65,17 +63,20 @@ runner:
         name: *title
         project_name: *project
         output_dir: output/runs
+
 #scheduler:
 # type: StepLR
 # params:
 #   step_size: 10
 #   gamma: 0.8
 #   last_epoch: -1
+#
 # type: MultiStepLR
 # params:
 #   milestones: [5, 10, 15, 25, 45, 50, 55, 60, 100, 200]
 #   gamma: .5
 #   last_epoch: -1
+#
 # type: ReduceLROnPlateau
 # monitor: train_acc
 # params:
@@ -87,8 +88,17 @@ runner:
 #   cooldown: 0
 #   min_lr: 0
 #   eps: 0.00000008
+#
 # type: ExponentialLR
 # params:
 #   # initial points
 #   # [0.98, 0.97, 0.96, 0.95, 0.94, 0.93, 0.92]
 #   gamma: *gamma
+#
+# type: OneCycleLR
+# params:
+#   max_lr: 0.05
+#   steps_per_epoch: *steps_per_epoch
+#   epochs: *max_epochs
+#   pct_start: 0.2
+#   anneal_strategy: cos

@@ -1,35 +1,33 @@
 hyperparameter:
     # image 수: 5717
     batch_size: &batch_size 4
-    steps_per_epoch: &steps_per_epoch 1429
-    lr: &lr 5e-4
-    optimizer: &optimizer SGD
-    momentum: &momentum 0.9
+    #steps_per_epoch: &steps_per_epoch 1429
+    lr: &lr 5e-3
+    optimizer: &optimizer Adam
+    gamma: &gamma 0.3
+    #momentum: &momentum 0.9
     epoch: &max_epochs 40000
 
 project: &project XNOR_YOLO
-experiments: &title 1.xnor-yolo(deterministic)
+experiments: &title 1.xnor-yolo(DGX)
 
 dataloader:
     type: DataLoader
     params:
-        num_workers: 4
+        num_workers: 12
         batch_size: *batch_size
 
 scheduler:
-    type: OneCycleLR
+    type: ExponentialLR
     params:
-        max_lr: 0.05
-        steps_per_epoch: *steps_per_epoch
-        epochs: *max_epochs
-        pct_start: 0.2
-        anneal_strategy: cos
+        gamma: *gamma
+        last_epoch: -1
 
 optimizer:
     type: *optimizer
     params:
         lr: *lr
-        momentum: *momentum
+        #momentum: *momentum
 
 runner:
     type: TrainingContainer
@@ -39,7 +37,7 @@ runner:
         params:
             max_epochs: *max_epochs
             gpus: -1
-            accelerator: dp
+            accelerator: ddp
             fast_dev_run: false
             amp_level: "02"
             weights_summary: top
@@ -64,17 +62,25 @@ runner:
         name: *title
         project_name: *project
         output_dir: output/runs
+
 #scheduler: # ExponentialLR in paper
+# type: ExponentialLR
+# parmas:
+#   gamma: 0.3
+#   last_epoch: 01
+#
 # type: StepLR
 # params:
 #   step_size: 10
 #   gamma: 0.8
 #   last_epoch: -1
+#
 # type: MultiStepLR
 # params:
 #   milestones: [5, 10, 15, 25, 45, 50, 55, 60, 100, 200]
 #   gamma: .5
 #   last_epoch: -1
+#
 # type: ReduceLROnPlateau
 # monitor: train_acc
 # params:
@@ -86,3 +92,11 @@ runner:
 #   cooldown: 0
 #   min_lr: 0
 #   eps: 0.00000008
+#
+# type: OneCycleLR
+# params:
+#   max_lr: 0.05
+#   steps_per_epoch: *steps_per_epoch
+#   epochs: *max_epochs
+#   pct_start: 0.2
+#   anneal_strategy: cos

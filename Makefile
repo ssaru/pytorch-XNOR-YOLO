@@ -19,14 +19,6 @@ set-pre-commit:
 	python3 -m pip install --no-cache-dir pre-commit==2.11.1
 	pre-commit install
 
-set-dockerfile-linter:
-	wget -O hadolint https://github.com/hadolint/hadolint/releases/download/v2.3.0/hadolint-Linux-x86_64 
-	chmod +x hadolint && sudo mv hadolint /usr/local/bin/
-
-set-dockerfile-generator:
-	curl -o dfg -L https://github.com/ozankasikci/dockerfile-generator/releases/download/v1.0.0/dfg_v1.0.0_linux_amd64
-	chmod +x dfg && sudo mv dfg /usr/local/bin
-
 set-test:
 	python3 -m pip install --no-cache-dir pytest==6.2.1 pytest-cov==2.10.1 pytest_xdist==2.2.0
 
