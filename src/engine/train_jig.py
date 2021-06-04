@@ -54,15 +54,18 @@ class TrainingContainer(LightningModule):
 
     def shared_step(self, input, target):
         pred_tensor = self(input)
-        loss_dict = self.model.loss(pred_tensor=pred_tensor, target_tensor=target, image_sizes=self.image_sizes)
+        loss_dict = self.model.loss(
+            pred_tensor=pred_tensor, target_tensor=target, image_sizes=self.image_sizes
+        )
 
         return pred_tensor, loss_dict
 
     def training_step(self, batch, batch_idx):
         x, y = batch
+        batch_size = x.shape[0]
         _, loss_dict = self.shared_step(x, y)
 
-        total_loss = loss_dict["total_loss"]
+        total_loss = loss_dict["total_loss"] / batch_size
         box1_confidence_loss = loss_dict["obj_loss"].pop("confidence1_loss").cpu()
         box1_cx_loss = loss_dict["obj_loss"].pop("box1_cx_loss").cpu()
         box1_cy_loss = loss_dict["obj_loss"].pop("box1_cy_loss").cpu()

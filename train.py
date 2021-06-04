@@ -6,7 +6,7 @@ Options:
     --dataset-config <dataset config path>  Path to YAML file for dataset configuration  [default: conf/data/data.yml] [type: path]
     --model-config <model config path>  Path to YAML file for model configuration  [default: conf/model/xnoryolo.yml] [type: path]
     --runner-config <runner config path>  Path to YAML file for model configuration  [default: conf/training/xnoryolo_training.yml] [type: path]
-    --checkpoint-path <checkpoint path>  Path to model weight for resume  [default: None] [type: path]
+    --checkpoint-path <checkpoint path>  Path to model weight for resume  [default: output/runs/XNOR_YOLO/v002/XnorNetYolo_epoch=08-train_loss=9.87-val_loss=0.00.ckpt] [type: path]
     -h --help  Show this.
 """
 
@@ -48,7 +48,8 @@ def train(hparams: dict):
     log_dir.mkdir(parents=True, exist_ok=True)
 
     train_dataloader, test_dataloader = get_data_loaders(config=config)
-    config.scheduler.params.steps_per_epoch = len(train_dataloader)
+    # TODO. steps_per_epoch가 없을 수 있음 처리해야함
+    # config.scheduler.params.steps_per_epoch = len(train_dataloader)
     print(f"`steps_per_epoch` is : {config.scheduler.params.steps_per_epoch}")
 
     model: nn.Module = build_model(model_conf=config.model)
@@ -65,7 +66,8 @@ def train(hparams: dict):
         early_stopping_config=config.runner.earlystopping.params
     )
 
-    profiler = SimpleProfiler(output_filename="perf.txt")
+    # TODO. SimpleProfiler는 ddp spawn에서 문제가 발생 TextIO Error
+    # profiler = SimpleProfiler(output_filename="perf.txt")
 
     with (log_dir / Path("config.yaml")).open("w") as f:
         OmegaConf.save(config=config, f=f)
@@ -90,7 +92,8 @@ def train(hparams: dict):
         precision=32,
         limit_train_batches=1.0,
         limit_val_batches=0.3,
-        profiler=profiler,
+        # TODO. SimpleProfiler는 ddp spawn에서 문제가 발생 TextIO Error
+        # profiler=profiler,
     )
 
     trainer.fit(
