@@ -16,4 +16,4 @@ torchsummary==1.5.1
 torchvision==0.8.2
 type-docopt==0.1.0
 wandb==0.10.8
-knockknock=0.1.8.1
+knockknock==0.1.8.1
