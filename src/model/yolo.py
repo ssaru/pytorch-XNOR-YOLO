@@ -76,15 +76,21 @@ class Yolo(nn.Module):
     def loss(self, pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: Tuple = (448, 448)):
         return self.loss_fn(pred_tensor=pred_tensor, target_tensor=target_tensor, image_sizes=image_sizes)
 
-    def inference(self, x: torch.Tensor):
+    def inference(self, x: torch.Tensor, image_size: Tuple):
         # single inference
         pred_tensor = self(x)
-        pred_boxes = yolotensor_to_xyxyabs(yolo_coord_output=pred_tensor, image_sizes=(self._width, self._height))
+        
+        # 2 of power at width, height in pred_tensor
+        pred_tensor[:, :, :, 3:5] = torch.pow(pred_tensor[:, :, :, 3:5], 2)
+        pred_tensor[:, :, :, 8:10] = torch.pow(pred_tensor[:, :, :, 8:10], 2)
+        print(f"image size : {image_size}")
+        pred_boxes = yolotensor_to_xyxyabs(yolo_coord_output=pred_tensor, image_sizes=image_size)
         for boxes_info in pred_boxes:
             box1_idx, box1, box2 = boxes_info
             b, y, x = box1_idx
             pred_tensor[b, y, x, 1:5] = box1
             pred_tensor[b, y, x, 7:11] = box2                    
+        
         prediction = get_boxes(pred_tensor=pred_tensor, confidence_score=self._confidence)        
 
         return prediction

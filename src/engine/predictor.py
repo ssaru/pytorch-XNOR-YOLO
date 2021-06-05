@@ -28,9 +28,11 @@ class Predictor(torch.nn.Module):
         print(f"====================")
         self.model: nn.Module = build_model(model_conf=config.model)
 
-    def forward(self, x):
-        return self.model.inference(x)
+    def forward(self, x):        
+        predictions = self.model.inference(x, image_size=self.image_size)
+        return predictions
 
     def preprocess(self, image: Image):
+        self.image_size = image.size
         image = image.resize((448,448))        
         return torchvision.transforms.ToTensor()(image).unsqueeze(0)

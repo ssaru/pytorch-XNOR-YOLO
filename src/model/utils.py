@@ -230,53 +230,61 @@ class BinarizedConvBlock(nn.Module):
         return x
 
 
-def get_boxes(pred_tensor: torch.Tensor, confidence_score: float = 0.3):    
-    prediction = []
+def get_boxes(pred_tensor: torch.Tensor, confidence_score: float = 0.3):        
+    predictions = []
 
-    classes = torch.argmax(pred_tensor[:,:,:,10:], dim=3).float()    
+    classes = torch.argmax(pred_tensor[:,:,:,11:], dim=3).float() + 1
     unique = torch.unique(classes)    
     
     for specific_class in unique:
         is_background = (specific_class == 0)
         if is_background:
             continue
-        indices = torch.where(classes==specific_class)
 
+        indices = torch.where(classes==specific_class)        
         boxes, scores = [], []        
         for b, y, x in zip(*indices):
-            boxes1 = pred_tensor[b,y,x,1:5] # shape: (1, 4)
-            boxes2 = pred_tensor[b,y,x,6:10] # shape: (1, 4)    
+            # 이미지를 벗어나는 box를 clipping해야함            
+            scores1 = pred_tensor[b,y,x,0]
+            boxes1 = pred_tensor[b,y,x,1:5] # shape: (1, 4)            
             boxes.append(boxes1)
-            boxes.append(boxes2)
-
-            scores1 = pred_tensor[b,y,x,0] # shape: (1, 4)
-            scores2 = pred_tensor[:,:,:,5] # shape: (1, 4)
-            scores.append(scores1)
-            scores.append(scores1)
+            scores.append(scores1)                                                                                 
+            
+            scores2 = pred_tensor[b,y,x,5]            
+            boxes2 = pred_tensor[b,y,x,6:10] # shape: (1, 4)                        
+            boxes.append(boxes2)                                    
+            scores.append(scores2)            
+            
                 
         if (len(boxes) == 0) or (len(scores) == 0):
             continue
             
-
         boxes = torch.stack(boxes)
-        scores = torch.stack(scores)
-        print(f"shape boxes: {boxes.shape}, shape scores: {scores.shape}")
+        scores = torch.stack(scores)        
         
-        indices = soft_nms(dets=boxes, box_scores=scores)
+        indices, scores = soft_nms(dets=boxes, box_scores=scores, thresh=confidence_score)
 
         for idx in indices:        
             if scores[idx] < confidence_score:
                 continue
 
             pred_confidence = float(scores[idx])
-            pred_box = boxes[idx].int().tolist()
+            pred_box = boxes[idx].int().tolist()            
             pred_classes = int(specific_class)
-            prediction.append([pred_confidence, pred_box, pred_classes])                    
 
-    return prediction
+            xmin, ymin, xmax, ymax = pred_box
+            xmin = xmin if xmin > 0 else 0
+            ymin = ymin if ymin > 0 else 0
+            xmax = xmax if 448 < xmax else 448
+            ymax = ymax if 448 < ymax else 448
+            pred_box = [xmin, ymin, xmax, ymax]
+
+            predictions.append([pred_confidence, pred_box, pred_classes])
+
+    return predictions
 
 
-def soft_nms(dets, box_scores, sigma=0.5, thresh=0.001):
+def soft_nms(dets, box_scores, sigma=0.1, thresh=0.001):
     """
     Build a pytorch implement of Soft NMS algorithm.
     refers: https://github.com/DocF/Soft-NMS/blob/master/softnms_pytorch.py
@@ -339,5 +347,5 @@ def soft_nms(dets, box_scores, sigma=0.5, thresh=0.001):
     # select the boxes and keep the corresponding indexes
     keep = dets[:, 4][scores > thresh].int()
 
-    return keep
+    return keep, scores
     
