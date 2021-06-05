@@ -37,7 +37,7 @@ runner:
         params:
             max_epochs: *max_epochs
             gpus: -1
-            accelerator: ddp2
+            accelerator: ddp
             fast_dev_run: false
             amp_level: "02"
             weights_summary: top
