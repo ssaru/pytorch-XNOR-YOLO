@@ -24,7 +24,7 @@ class LinearBlock(nn.Module):
 
         self.linear = nn.Linear(in_features=in_feature, out_features=out_feature, bias=bias)
         self.batch_norm = batch_norm
-        if self.batch_norm:
+        if self.batch_norm:            
             self.batch_norm = nn.BatchNorm1d(num_features=out_feature)
 
         self.activation = activation
@@ -38,9 +38,9 @@ class LinearBlock(nn.Module):
     def forward(self, x):
         if self.dropout:
             x = self.dropout(x)
-
+                    
         x = self.linear(x)
-
+        
         if self.batch_norm:
             x = self.batch_norm(x)
 

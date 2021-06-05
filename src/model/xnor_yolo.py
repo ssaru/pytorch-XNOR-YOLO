@@ -76,7 +76,7 @@ class XnorNetYolo(nn.Module):
     def loss(self, pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: Tuple = (448, 448)):
         return self.loss_fn(pred_tensor=pred_tensor, target_tensor=target_tensor, image_sizes=image_sizes)
 
-    def inference(self, x: torch.Tensor):
+    def inference(self, x: torch.Tensor, image_size: Tuple):
         # single inference        
         pred_tensor = self(x)
 
@@ -84,7 +84,7 @@ class XnorNetYolo(nn.Module):
         pred_tensor[:,:,:,3:5] = torch.pow(pred_tensor[:,:,:,3:5], 2)
         pred_tensor[:,:,:,9:11] = torch.pow(pred_tensor[:,:,:,9:11], 2)
 
-        pred_boxes = yolotensor_to_xyxyabs(yolo_coord_output=pred_tensor, image_sizes=(self._width, self._height))        
+        pred_boxes = yolotensor_to_xyxyabs(yolo_coord_output=pred_tensor, image_sizes=image_size)        
         for boxes_info in pred_boxes:
             box1_idx, box1, box2 = boxes_info
             b, y, x = box1_idx
