@@ -6,7 +6,7 @@ Options:
     --dataset-config <dataset config path>  Path to YAML file for dataset configuration  [default: conf/data/data.yml] [type: path]
     --model-config <model config path>  Path to YAML file for model configuration  [default: conf/model/xnoryolo.yml] [type: path]
     --runner-config <runner config path>  Path to YAML file for model configuration  [default: conf/training/xnoryolo_training.yml] [type: path]
-    --checkpoint-path <checkpoint path>  Path to model weight for resume  [default: output/runs/XNOR_YOLO/v002/XnorNetYolo_epoch=08-train_loss=9.87-val_loss=0.00.ckpt] [type: path]
+    --checkpoint-path <checkpoint path>  Path to model weight for resume  [default: None] [type: path]
     -h --help  Show this.
 """
 
@@ -74,7 +74,7 @@ def train(hparams: dict):
 
     trainer = Trainer(
         log_every_n_steps=1,
-        accelerator=config.runner.trainer.distributed_backend,
+        accelerator=config.runner.trainer.params.accelerator,
         fast_dev_run=False,
         gpus=config.runner.trainer.params.gpus,
         amp_level="O2",
