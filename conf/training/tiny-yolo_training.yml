@@ -1,6 +1,6 @@
 hyperparameter:
   # image 수: 5717
-  batch_size: &batch_size 8 #64
+  batch_size: &batch_size 64
   steps_per_epoch: &steps_per_epoch 1429
   lr: &lr 5e-3
   optimizer: &optimizer SGD
