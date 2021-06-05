@@ -1,0 +1,169 @@
+model:
+  type: XnorNetYolo
+
+  params:
+    confidence: 0.3
+    width: 448
+    height: 448
+    channels: &in_channels 3
+    classes: &out_feature 20
+    mode: &mode 1 # stochastic=2 or deterministic=1
+
+    feature_layers:
+      conv:
+        # Layer 1
+        - in_channels: *in_channels
+          out_channels: 16
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation: false
+          pool:
+            type: MaxPool2d
+            args:
+              kernel_size: [2, 2]
+              padding: 0
+          mode: *mode
+
+        # Layer 2
+        - in_channels: 16
+          out_channels: 32
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation: false
+          pool:
+            type: MaxPool2d
+            args:
+              kernel_size: [2, 2]
+              padding: 0
+          mode: *mode
+
+        # Layer 3
+        - in_channels: 32
+          out_channels: 64
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation: false
+          pool:
+            type: MaxPool2d
+            args:
+              kernel_size: [2, 2]
+              padding: 0
+          mode: *mode
+
+        # Layer 4
+        - in_channels: 64
+          out_channels: 128
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation: false
+          pool:
+            type: MaxPool2d
+            args:
+              kernel_size: [2, 2]
+              padding: 0
+          mode: *mode
+
+        # Layer 5
+        - in_channels: 128
+          out_channels: 256
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation: false
+          pool:
+            type: MaxPool2d
+            args:
+              kernel_size: [2, 2]
+              padding: 0
+          mode: *mode
+
+        # Layer 6
+        - in_channels: 256
+          out_channels: 512
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation: false
+          pool:
+            type: MaxPool2d
+            args:
+              kernel_size: [2, 2]
+              padding: 0
+          mode: *mode
+
+        # Layer 7
+        - in_channels: 512
+          out_channels: 1024
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation: false
+          pool: null
+          mode: *mode
+
+        # Layer 8
+        - in_channels: 1024
+          out_channels: 256
+          kernel_size: 3
+          stride: 1
+          padding: 1
+          bias: true
+          padding_mode: zeros
+          batch_norm: true
+          activation: false
+          pool: null
+          mode: *mode
+
+      #############
+      linear:
+        - in_feature: 12544
+          out_feature: 8192
+          bias: true
+          batch_norm: false
+          activation:
+            type: LeakyReLU
+            args: {}
+          dropout: null
+
+        - in_feature: 8192
+          out_feature: 4096
+          bias: true
+          batch_norm: false
+          activation:
+            type: LeakyReLU
+            args: {}
+          dropout: null
+
+        - in_feature: 4096
+          out_feature: 1519
+          bias: true
+          batch_norm: false
+          activation:
+            type: LeakyReLU
+            args: {}
+          dropout: null

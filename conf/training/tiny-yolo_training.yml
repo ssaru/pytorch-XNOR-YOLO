@@ -1,0 +1,106 @@
+hyperparameter:
+  # image 수: 5717
+  batch_size: &batch_size 8 #64
+  steps_per_epoch: &steps_per_epoch 1429
+  lr: &lr 5e-3
+  optimizer: &optimizer SGD
+  gamma: &gamma 0.3
+  momentum: &momentum 0.9
+  epoch: &max_epochs 135
+
+project: &project TINY_YOLO
+experiments: &title 1.tiny-yolo(DGX)
+
+dataloader:
+  type: DataLoader
+  params:
+    num_workers: 48
+    batch_size: *batch_size
+
+scheduler:
+  type: OneCycleLR
+  params:
+    max_lr: 0.01
+    steps_per_epoch: *steps_per_epoch
+    epochs: *max_epochs
+    pct_start: 0.1
+    anneal_strategy: cos
+
+optimizer:
+  type: *optimizer
+  params:
+    lr: *lr
+    momentum: *momentum
+    weight_decay: 0.0005
+
+runner:
+  type: TrainingContainer
+
+  trainer:
+    type: Trainer
+    params:
+      max_epochs: *max_epochs
+      gpus: -1
+      accelerator: ddp
+      fast_dev_run: false
+      amp_level: "02"
+      weights_summary: top
+      reload_dataloaders_every_epoch: false
+      resume_from_checkpoint: null
+      benchmark: false
+      deterministic: true
+      num_sanity_val_steps: 5
+      overfit_batches: 0.0
+      precision: 32
+      profiler: true
+
+  earlystopping:
+    type: EarlyStopping
+    params:
+      monitor: valid_loss
+      mode: min
+      patience: 30
+      verbose: True
+
+  experiments:
+    name: *title
+    project_name: *project
+    output_dir: output/runs
+#scheduler:
+# type: StepLR
+# params:
+#   step_size: 10
+#   gamma: 0.8
+#   last_epoch: -1
+#
+# type: MultiStepLR
+# params:
+#   milestones: [5, 10, 15, 25, 45, 50, 55, 60, 100, 200]
+#   gamma: .5
+#   last_epoch: -1
+#
+# type: ReduceLROnPlateau
+# monitor: train_acc
+# params:
+#   mode: max
+#   factor: 0.9
+#   patience: 1
+#   threshold: 0.0004
+#   threshold_mode: rel
+#   cooldown: 0
+#   min_lr: 0
+#   eps: 0.00000008
+#
+# type: ExponentialLR
+# params:
+#   # initial points
+#   # [0.98, 0.97, 0.96, 0.95, 0.94, 0.93, 0.92]
+#   gamma: *gamma
+#
+# type: OneCycleLR
+# params:
+#   max_lr: 0.05
+#   steps_per_epoch: *steps_per_epoch
+#   epochs: *max_epochs
+#   pct_start: 0.2
+#   anneal_strategy: cos

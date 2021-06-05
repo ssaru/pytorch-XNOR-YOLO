@@ -48,9 +48,6 @@ def train(hparams: dict):
     log_dir.mkdir(parents=True, exist_ok=True)
 
     train_dataloader, test_dataloader = get_data_loaders(config=config)
-    # TODO. steps_per_epoch가 없을 수 있음 처리해야함
-    # config.scheduler.params.steps_per_epoch = len(train_dataloader)
-    print(f"`steps_per_epoch` is : {config.scheduler.params.steps_per_epoch}")
 
     model: nn.Module = build_model(model_conf=config.model)
     model.summary()
@@ -59,12 +56,10 @@ def train(hparams: dict):
 
     checkpoint_callback = get_checkpoint_callback(log_dir=log_dir, config=config)
     wandb_logger = get_wandb_logger(log_dir=log_dir, config=config)
-    # wandb_logger.watch(model, log="gradients", log_freq=100)
+    wandb_logger.watch(model, log="gradients", log_freq=100)
 
     lr_logger = LearningRateMonitor()
-    early_stop_callback = get_early_stopper(
-        early_stopping_config=config.runner.earlystopping.params
-    )
+    early_stop_callback = get_early_stopper(early_stopping_config=config.runner.earlystopping.params)
 
     # TODO. SimpleProfiler는 ddp spawn에서 문제가 발생 TextIO Error
     # profiler = SimpleProfiler(output_filename="perf.txt")
