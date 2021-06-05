@@ -381,12 +381,16 @@ model:
           out_feature: 4096
           bias: true
           batch_norm: false
-          activation: null
+          activation:
+            type: LeakyReLU
+            args: {}
           dropout: null
 
         - in_feature: 4096
           out_feature: 1519
           bias: true
-          batch_norm: true
-          activation: false
+          batch_norm: false
+          activation:
+            type: LeakyReLU
+            args: {}
           dropout: null

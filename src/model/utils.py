@@ -337,7 +337,7 @@ def soft_nms(dets, box_scores, sigma=0.1, thresh=0.001):
         
         w = torch.maximum(torch.tensor(0.0), xx2 - xx1 + 1)
         h = torch.maximum(torch.tensor(0.0), yy2 - yy1 + 1)
-        inter = torch.tensor(w * h).cuda() if cuda else torch.tensor(w * h)
+        inter = (w * h).cuda() if cuda else (w * h)
         ovr = torch.div(inter, (areas[i] + areas[pos:] - inter))
 
         # Gaussian decay

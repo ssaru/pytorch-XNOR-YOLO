@@ -6,7 +6,7 @@ Options:
     --dataset-config <dataset config path>  Path to YAML file for dataset configuration  [default: conf/data/data.yml] [type: path]
     --model-config <model config path>  Path to YAML file for model configuration  [default: conf/model/xnoryolo.yml] [type: path]
     --runner-config <runner config path>  Path to YAML file for model configuration  [default: conf/training/xnoryolo_training.yml] [type: path]
-    --checkpoint-path <checkpoint path>  Path to model weight for resume  [default: output/runs/XNOR_YOLO/v002/XnorNetYolo_epoch=08-train_loss=9.87-val_loss=0.00.ckpt] [type: path]
+    --checkpoint-path <checkpoint path>  Path to model weight for resume  [default: None] [type: path]
     -h --help  Show this.
 """
 
@@ -48,9 +48,6 @@ def train(hparams: dict):
     log_dir.mkdir(parents=True, exist_ok=True)
 
     train_dataloader, test_dataloader = get_data_loaders(config=config)
-    # TODO. steps_per_epoch가 없을 수 있음 처리해야함
-    # config.scheduler.params.steps_per_epoch = len(train_dataloader)
-    print(f"`steps_per_epoch` is : {config.scheduler.params.steps_per_epoch}")
 
     model: nn.Module = build_model(model_conf=config.model)
     model.summary()
@@ -59,12 +56,10 @@ def train(hparams: dict):
 
     checkpoint_callback = get_checkpoint_callback(log_dir=log_dir, config=config)
     wandb_logger = get_wandb_logger(log_dir=log_dir, config=config)
-    # wandb_logger.watch(model, log="gradients", log_freq=100)
+    wandb_logger.watch(model, log="gradients", log_freq=100)
 
     lr_logger = LearningRateMonitor()
-    early_stop_callback = get_early_stopper(
-        early_stopping_config=config.runner.earlystopping.params
-    )
+    early_stop_callback = get_early_stopper(early_stopping_config=config.runner.earlystopping.params)
 
     # TODO. SimpleProfiler는 ddp spawn에서 문제가 발생 TextIO Error
     # profiler = SimpleProfiler(output_filename="perf.txt")
@@ -74,7 +69,7 @@ def train(hparams: dict):
 
     trainer = Trainer(
         log_every_n_steps=1,
-        accelerator=config.runner.trainer.distributed_backend,
+        accelerator=config.runner.trainer.params.accelerator,
         fast_dev_run=False,
         gpus=config.runner.trainer.params.gpus,
         amp_level="O2",

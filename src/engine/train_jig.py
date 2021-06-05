@@ -54,9 +54,7 @@ class TrainingContainer(LightningModule):
 
     def shared_step(self, input, target):
         pred_tensor = self(input)
-        loss_dict = self.model.loss(
-            pred_tensor=pred_tensor, target_tensor=target, image_sizes=self.image_sizes
-        )
+        loss_dict = self.model.loss(pred_tensor=pred_tensor, target_tensor=target, image_sizes=self.image_sizes)
 
         return pred_tensor, loss_dict
 
@@ -65,7 +63,7 @@ class TrainingContainer(LightningModule):
         batch_size = x.shape[0]
         _, loss_dict = self.shared_step(x, y)
 
-        total_loss = loss_dict["total_loss"] / batch_size
+        total_loss = loss_dict["total_loss"]
         box1_confidence_loss = loss_dict["obj_loss"].pop("confidence1_loss").cpu()
         box1_cx_loss = loss_dict["obj_loss"].pop("box1_cx_loss").cpu()
         box1_cy_loss = loss_dict["obj_loss"].pop("box1_cy_loss").cpu()
@@ -110,15 +108,6 @@ class TrainingContainer(LightningModule):
 
     def training_epoch_end(self, training_step_outputs):
         loss = 0
-        box1_confidence_loss = 0
-        box1_cx_loss, box1_cy_loss = 0, 0
-        box1_width_loss, box1_height_loss = 0, 0
-
-        box2_confidence_loss = 0
-        box2_cx_loss, box2_cy_loss = 0, 0
-        box2_width_loss, box2_height_loss = 0, 0
-
-        classes_loss = 0
 
         num_of_outputs = len(training_step_outputs)
 
@@ -173,9 +162,7 @@ class TrainingContainer(LightningModule):
         del y
         del _
 
-        return {
-            "loss": total_loss,
-        }
+        return {"loss": total_loss}
 
     def validation_epoch_end(self, validation_step_outputs):
         loss = 0

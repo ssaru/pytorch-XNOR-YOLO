@@ -6,10 +6,13 @@ from omegaconf import DictConfig
 from torchsummary import summary as torch_summary
 
 from src.data.pascal_voc import VOC2012
-from src.model.detection_loss import yolo_loss
-from src.model.utils import get_boxes
-from src.model.detection_loss import yolotensor_to_xyxyabs
-from src.model.utils import BinarizedConvBlock, BinarizedLinearBlock, LinearBlock
+from src.model.detection_loss import yolo_loss, yolotensor_to_xyxyabs
+from src.model.utils import (
+    BinarizedConvBlock,
+    BinarizedLinearBlock,
+    LinearBlock,
+    get_boxes,
+)
 from src.utils import make_logger
 
 logger = make_logger(name=str(__name__))
@@ -67,10 +70,10 @@ class XnorNetYolo(nn.Module):
 
         x = x.view(-1, 7, 7, 31)
 
-        x[:,:,:,0] = torch.sigmoid(x[:,:,:,0])        
-        x[:,:,:,5] = torch.sigmoid(x[:,:,:,0])
-        x[:,:,:,10:] = torch.sigmoid(x[:,:,:,10:])
-        
+        x[:, :, :, 0] = torch.sigmoid(x[:, :, :, 0])
+        x[:, :, :, 5] = torch.sigmoid(x[:, :, :, 0])
+        x[:, :, :, 10:] = torch.sigmoid(x[:, :, :, 10:])
+
         return x
 
     def loss(self, pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: Tuple = (448, 448)):
@@ -81,15 +84,15 @@ class XnorNetYolo(nn.Module):
         pred_tensor = self(x)
 
         # width, height power of 2
-        pred_tensor[:,:,:,3:5] = torch.pow(pred_tensor[:,:,:,3:5], 2)
-        pred_tensor[:,:,:,9:11] = torch.pow(pred_tensor[:,:,:,9:11], 2)
+        pred_tensor[:, :, :, 3:5] = torch.pow(pred_tensor[:, :, :, 3:5], 2)
+        pred_tensor[:, :, :, 9:11] = torch.pow(pred_tensor[:, :, :, 9:11], 2)
 
         pred_boxes = yolotensor_to_xyxyabs(yolo_coord_output=pred_tensor, image_sizes=image_size)        
         for boxes_info in pred_boxes:
             box1_idx, box1, box2 = boxes_info
             b, y, x = box1_idx
             pred_tensor[b, y, x, 1:5] = box1
-            pred_tensor[b, y, x, 7:11] = box2                    
+            pred_tensor[b, y, x, 7:11] = box2
         prediction = get_boxes(pred_tensor=pred_tensor, confidence_score=self._confidence)
 
         return prediction
