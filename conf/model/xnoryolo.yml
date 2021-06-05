@@ -378,15 +378,26 @@ model:
       #############
       linear:
         - in_feature: 50176
+          out_feature: 16384
+          bias: true
+          batch_norm: false
+          activation:
+            type: LeakyReLU
+            args: {}
+          dropout: null
+
+        - in_feature: 16384
           out_feature: 4096
           bias: true
           batch_norm: false
-          activation: null
+          activation:
+            type: LeakyReLU
+            args: {}
           dropout: null
 
         - in_feature: 4096
           out_feature: 1519
           bias: true
-          batch_norm: true
+          batch_norm: false
           activation: false
           dropout: null
