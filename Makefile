@@ -74,4 +74,6 @@ clean-test:
 	rm -rf tests/output
 	rm -rf *.log
 	rm -rf *.png
+	rm -rf src/measure/input/detection-results/*
+	rm -rf src/measure/input/ground-truth/*
 #################

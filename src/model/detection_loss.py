@@ -33,7 +33,7 @@ def calc_nonobj_loss(output: torch.Tensor, target: torch.Tensor) -> dict:
     }
 
 
-def calc_yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor) -> dict:
+def calc_yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: Tuple = (448,448)) -> dict:
     """
     output: (n1, 7, 7, 31)
     label: (n2, 7, 7, 31), where n1==n2
@@ -54,6 +54,10 @@ def calc_yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor) -> di
     obj_target_block = obj_mask * target_tensor
     nonobj_output_block = noobj_mask * pred_tensor
     nonobj_target_block = noobj_mask * target_tensor
+
+    obj_output_block: torch.Tensor = calc_confidence(
+            pred_tensor=obj_output_block, target_tensor=target_tensor, image_sizes=image_sizes
+        )
 
     logger.info(f"calculate each loss, obj and nonobj")
     obj_loss_dict = calc_obj_loss(output=obj_output_block, target=obj_target_block)
@@ -215,22 +219,25 @@ def calc_confidence(
     pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: Tuple = (448, 448)
 ) -> torch.Tensor:
 
+    indices = torch.where(target_tensor[:, :, :, 0] > 0)
     pred_boxes: List = yolotensor_to_xyxyabs(yolo_coord_output=pred_tensor, image_sizes=image_sizes)
     target_boxes: List = yolotensor_to_xyxyabs(yolo_coord_output=target_tensor, image_sizes=image_sizes)
-    ious_info = pairwise_iou(pred_boxes=pred_boxes, target_boxes=target_boxes)
-    logger.info(f"pred_boxes: {pred_boxes}, target_boxes: {target_boxes}, ious info: {ious_info}")
 
-    for indice, box1_iou, box2_iou in ious_info:
-        b, y, x = indice
-        pred_tensor[b, y, x, 0] *= box1_iou
-        pred_tensor[b, y, x, 5] *= box2_iou
+    for b, y, x in zip(*indices):
+        gt_box = target_boxes[b, y, x, 1:5]
+        box1 = pred_boxes[b, y, x, 1:5]
+        box2 = pred_boxes[b, y, x, 6:10]
+
+        box1_iou = calc_iou(pred_box=box1, target_box=gt_box)
+        box2_iou = calc_iou(pred_box=box2, target_box=gt_box)
+
+        pred_tensor[b,y,x,0] *= box1_iou
+        pred_tensor[b,y,x,5] *= box2_iou        
 
     return pred_tensor
 
 
-def yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: Tuple = (448, 448)) -> Dict:
-    pred_tensor: torch.Tensor = calc_confidence(
-        pred_tensor=pred_tensor, target_tensor=target_tensor, image_sizes=image_sizes
-    )
+def yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: Tuple = (448, 448)) -> Dict:        
+    
     loss_dict = calc_yolo_loss(pred_tensor=pred_tensor, target_tensor=target_tensor)
     return loss_dict

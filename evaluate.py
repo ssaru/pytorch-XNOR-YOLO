@@ -3,13 +3,14 @@ Usage:
     main.py evaluate [options] [--config=<model config path>] [--weights-filepath=<weights file path>] [--image-path=<image path>]
     main.py evaluate (-h | --help)
 Options:
-    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/XNOR-YOLO/config.yaml] [type: path]
-    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/XNOR-YOLO/XnorNetYolo_epoch=13-train_loss=4.54-val_loss=0.00.ckpt] [type: path]    
+    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/YOLO/config.yaml] [type: path]
+    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/YOLO/Yolo_epoch=17-train_loss=21.46-val_loss=0.00.ckpt] [type: path]    
             
     -h --help  Show this.
 """
 import sys
 import subprocess
+import traceback
 from pathlib import Path
 
 import pytorch_lightning
@@ -17,6 +18,8 @@ import torch
 from omegaconf import DictConfig
 from torchvision.datasets import VOCDetection
 from omegaconf import OmegaConf
+from PIL import ImageFile 
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 from src.engine.predictor import Predictor
 from src.data.transforms import Yolofy
@@ -37,18 +40,19 @@ def evaluate(hparams: dict):
         
     if weight_filepath:
         predictor.load_state_dict(torch.load(weight_filepath, map_location="cpu")["state_dict"])
-        
-    if config.model.type == "XnorNetYolo":
-        predictor.eval()
-
-    voc2007 = VOCDetection(root="data", year="2007", image_set="val", download=False)
+            
+    predictor.eval()
+            
+    voc2012 = VOCDetection(root="data", year="2012", image_set="val", download=False)    
 
     root_path = Path("src/measure/input/")
     pred_path = root_path / Path("detection-results")
     gt_path = root_path / Path("ground-truth")
-    for image, target in voc2007:                
-        target = OmegaConf.create(target)
-        filename = Path(str(target.annotation.filename)).with_suffix(".txt")
+
+    
+    for image, target in voc2012:                
+        target = OmegaConf.create(target)        
+        filename = Path(str(target.annotation.filename)).with_suffix(".txt")        
         
         gt_filepath = gt_path / filename        
         gt_filepath.parent.mkdir(parents=True, exist_ok=True)
@@ -79,5 +83,6 @@ def evaluate(hparams: dict):
 
                 write_line = f"{classes} {confidence} {xmin} {ymin} {xmax} {ymax}\n"        
                 pred_file.write(write_line)                
+    
         
     subprocess.check_call(["python3", "src/measure/main.py"])

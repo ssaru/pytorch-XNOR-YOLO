@@ -83,7 +83,7 @@ class Yolo(nn.Module):
         # 2 of power at width, height in pred_tensor
         pred_tensor[:, :, :, 3:5] = torch.pow(pred_tensor[:, :, :, 3:5], 2)
         pred_tensor[:, :, :, 8:10] = torch.pow(pred_tensor[:, :, :, 8:10], 2)
-        print(f"image size : {image_size}")
+        
         pred_boxes = yolotensor_to_xyxyabs(yolo_coord_output=pred_tensor, image_sizes=image_size)
         for boxes_info in pred_boxes:
             box1_idx, box1, box2 = boxes_info
