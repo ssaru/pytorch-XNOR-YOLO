@@ -18,6 +18,7 @@ def get_data_loaders(config: DictConfig) -> Tuple[DataLoader, DataLoader]:
 
     args["image_set"] = "train"
 
+    # TODO. Resize를 잘못함...
     args["transforms"] = Yolofy(resize_sizes=(config.model.params.width, config.model.params.height))
     train_dataset = load_class(module=torchvision.datasets, name=config.data.dataset.type, args=args)
 
@@ -31,7 +32,7 @@ def get_data_loaders(config: DictConfig) -> Tuple[DataLoader, DataLoader]:
 
     args["image_set"] = "val"
     args["download"] = False
-    
+
     test_dataset = load_class(module=torchvision.datasets, name=config.data.dataset.type, args=args)
     test_dataloader = DataLoader(
         dataset=test_dataset,

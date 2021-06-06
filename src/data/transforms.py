@@ -1,6 +1,8 @@
 import sys
 from typing import Dict, Tuple, Union
 
+import albumentations as A
+import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -9,7 +11,43 @@ from PIL import Image
 from torchvision import transforms
 
 from src.data.pascal_voc import VOC2012
+from src.model.detection_loss import yolotensor_to_xyxyabs
+from src.model.yolo import Yolo
 from src.utils import make_logger
+
+BOX_COLOR = (255, 0, 0)  # Red
+TEXT_COLOR = (255, 255, 255)  # White
+
+
+def visualize_bbox(img, bbox, class_name, color=BOX_COLOR, thickness=2):
+    """Visualizes a single bounding box on the image"""
+    x_min, y_min, x_max, y_max = bbox
+    x_min, x_max, y_min, y_max = int(x_min), int(x_max), int(y_min), int(y_max)
+    print(f"drawing... xmin, ymin ,xmax, ymax: {x_min, y_min, x_max, y_max}")
+    cv2.rectangle(img, (x_min, y_min), (x_max, y_max), color=color, thickness=thickness)
+
+    ((text_width, text_height), _) = cv2.getTextSize(class_name, cv2.FONT_HERSHEY_SIMPLEX, 0.35, 1)
+    cv2.rectangle(img, (x_min, y_min - int(1.3 * text_height)), (x_min + text_width, y_min), BOX_COLOR, -1)
+    cv2.putText(
+        img,
+        text=class_name,
+        org=(x_min, y_min - int(0.3 * text_height)),
+        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        fontScale=0.35,
+        color=TEXT_COLOR,
+        lineType=cv2.LINE_AA,
+    )
+    return img
+
+
+def visualize(image, bboxes, category_ids, category_id_to_name):
+    img = image.copy()
+    for bbox, category_id in zip(bboxes, category_ids):
+        class_name = category_id_to_name[category_id]
+        img = visualize_bbox(img, bbox, class_name)
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    cv2.imwrite("test.png", img)
 
 
 def xyxyabs_to_xywhrel(
@@ -64,15 +102,21 @@ def xyxyabs_to_xywhrel(
         f"img_width: {img_width}, img_height:{img_height}, xmin:{box_xmin}, ymin:{box_ymin}, xmax:{box_xmax}, ymax:{box_ymax}"
     )
 
-    box_cx = torch.div((box_xmin + box_xmax) / 2, img_width)
-    box_cy = torch.div((box_ymin + box_ymax) / 2, img_height)
-    box_width = torch.div((box_xmax - box_xmin), img_width)
-    box_height = torch.div((box_ymax - box_ymin), img_height)
+    with torch.no_grad():
+        box_width = box_xmax - box_xmin
+        box_height = box_ymax - box_ymin
+        cx = box_xmin + (box_width / 2)
+        cy = box_ymin + (box_height / 2)
 
-    arr[:, 0] = box_cx
-    arr[:, 1] = box_cy
-    arr[:, 2] = box_width
-    arr[:, 3] = box_height
+        norm_cx = torch.div(cx, img_height)
+        norm_cy = torch.div(cy, img_height)
+        norm_width = torch.div(box_width, img_width)
+        norm_height = torch.div(box_height, img_height)
+
+    arr[:, 0] = norm_cx
+    arr[:, 1] = norm_cy
+    arr[:, 2] = norm_width
+    arr[:, 3] = norm_height
 
     return arr
 
@@ -126,38 +170,65 @@ class Yolofy(object):
         self.logger = make_logger(name=str(__class__))
         self._to_tensor = transforms.ToTensor()
         self._voc2012 = VOC2012()
-        self._resize_sizes = resize_sizes
+        self._resize_width, self._resize_height = resize_sizes
+        self.transform = A.Compose(
+            [A.Resize(height=self._resize_width, width=self._resize_height, p=1)],
+            bbox_params=A.BboxParams(format="pascal_voc", label_fields=["category_ids"]),
+        )
 
     def __call__(self, image: Image, target: Dict):
         self.logger.info(f"image: {type(image)}:{image}")
         self.logger.info(f"target: {type(target)}:{target}")
 
-        image = image.resize(self._resize_sizes)
-
+        image = np.array(image)
         target = OmegaConf.create(target)
 
         self.logger.info(f"omegaconf target: {type(target)}:{target}")
-        image_width = target.annotation.size.width
-        image_height = target.annotation.size.height
-
         self.logger.info(f"object info : {type(target.annotation.object)}:{target.annotation.object}")
-        ans_target = []
+
+        bboxes, category_ids = [], []
         for object_info in target.annotation.object:
-            cls_idx = torch.tensor(self._voc2012[str(object_info.name)])
+            cls_idx = self._voc2012[str(object_info.name)]
             num_cls = len(self._voc2012)
-            cls_onehot_vector = F.one_hot(cls_idx, num_cls).tolist()
 
-            xmin = object_info.bndbox.xmin
-            ymin = object_info.bndbox.ymin
-            xmax = object_info.bndbox.xmax
-            ymax = object_info.bndbox.ymax
-            ans_target.append([xmin, ymin, xmax, ymax, *cls_onehot_vector])
+            xmin = int(object_info.bndbox.xmin)
+            ymin = int(object_info.bndbox.ymin)
+            xmax = int(object_info.bndbox.xmax)
+            ymax = int(object_info.bndbox.ymax)
+            bboxes.append([xmin, ymin, xmax, ymax])
+            category_ids.append(cls_idx)
 
-        xywhrel_boxes = xyxyabs_to_xywhrel(boxes=ans_target, image_sizes=[image_width, image_height])
+        transformed = self.transform(image=image, bboxes=bboxes, category_ids=category_ids)
+        image = transformed["image"]
+        bboxes = transformed["bboxes"]
+        category_ids = transformed["category_ids"]
+
+        ans_target = []
+        for idx, category_id in enumerate(category_ids):
+            cls_onehot_vector = F.one_hot(torch.tensor(category_id), num_cls).tolist()
+            box = bboxes[idx]
+            ans_target.append([*box, *cls_onehot_vector])
+
+        xywhrel_boxes = xyxyabs_to_xywhrel(boxes=ans_target, image_sizes=[self._resize_width, self._resize_height])
         ans_target = build_label_tensor(xywhrel_boxes=xywhrel_boxes)
+
+        image = Image.fromarray(image)
         ans_image = self._to_tensor(image)
 
         self.logger.info(f"ans image info : {type(ans_image)}, {ans_image.shape}:{ans_image}")
         self.logger.info(f"ans target info : {type(ans_target)}, {ans_target.shape}:{ans_target}")
 
-        return ans_image, ans_target
+        return ans_image, ans_target  # , image, bboxes, category_ids, self._voc2012.label # for visualization
+
+
+if __name__ == "__main__":
+    from torchvision.datasets import VOCDetection
+
+    voc2012 = VOCDetection(root="data", year="2012", image_set="train", download=False)
+    yolo = Yolofy()
+
+    for image, target in voc2012:
+        ans_image, ans_target, image, bboxes, category_ids, label = yolo(image=image, target=target)
+        print(f"output boxes: {bboxes}")
+        visualize(np.array(image), bboxes, category_ids, label)
+        break

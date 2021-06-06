@@ -1,6 +1,6 @@
 hyperparameter:
   # image 수: 5717
-  batch_size: &batch_size 64
+  batch_size: &batch_size 8
   steps_per_epoch: &steps_per_epoch 1429
   lr: &lr 5e-3
   optimizer: &optimizer SGD
@@ -9,12 +9,12 @@ hyperparameter:
   epoch: &max_epochs 135
 
 project: &project TINY_YOLO
-experiments: &title 1.tiny-yolo(DGX)
+experiments: &title 1.tiny-yolo(3090)
 
 dataloader:
   type: DataLoader
   params:
-    num_workers: 48
+    num_workers: 10
     batch_size: *batch_size
 
 scheduler:
