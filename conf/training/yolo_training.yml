@@ -54,7 +54,7 @@ runner:
     earlystopping:
         type: EarlyStopping
         params:
-            monitor: valid_loss
+            monitor: val_loss
             mode: min
             patience: 30
             verbose: True
@@ -63,7 +63,6 @@ runner:
         name: *title
         project_name: *project
         output_dir: output/runs
-
 #scheduler:
 # type: StepLR
 # params:

@@ -122,7 +122,7 @@ def get_checkpoint_callback(log_dir: Path, config: DictConfig) -> Union[Callback
         filepath=checkpoint_path,
         save_top_k=5,
         save_weights_only=False,
-        monitor="valid_loss",
+        monitor="val_loss",
         mode="min",
     )
 
