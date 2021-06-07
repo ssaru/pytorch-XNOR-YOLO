@@ -54,7 +54,9 @@ class TrainingContainer(LightningModule):
 
     def shared_step(self, input, target):
         pred_tensor = self(input)
-        loss_dict = self.model.loss(pred_tensor=pred_tensor, target_tensor=target, image_sizes=self.image_sizes)
+        loss_dict = self.model.loss(
+            pred_tensor=pred_tensor, target_tensor=target, image_sizes=self.image_sizes
+        )
 
         return pred_tensor, loss_dict
 
@@ -142,21 +144,21 @@ class TrainingContainer(LightningModule):
 
         classes_loss = loss_dict["obj_loss"].pop("classes_loss")
 
-        self.log("valid_loss", total_loss, on_step=True, logger=True)
+        self.log("val_loss", total_loss, on_step=True, logger=True)
 
-        self.log("valid_box1_confidence_loss", box1_confidence_loss, on_step=True, logger=True)
-        self.log("valid_box1_cx_loss", box1_cx_loss, on_step=True, logger=True)
-        self.log("valid_box1_cy_loss", box1_cy_loss, on_step=True, logger=True)
-        self.log("valid_box1_width_loss", box1_width_loss, on_step=True, logger=True)
-        self.log("valid_box1_height_loss", box1_height_loss, on_step=True, logger=True)
+        self.log("val_box1_confidence_loss", box1_confidence_loss, on_step=True, logger=True)
+        self.log("val_box1_cx_loss", box1_cx_loss, on_step=True, logger=True)
+        self.log("val_box1_cy_loss", box1_cy_loss, on_step=True, logger=True)
+        self.log("val_box1_width_loss", box1_width_loss, on_step=True, logger=True)
+        self.log("val_box1_height_loss", box1_height_loss, on_step=True, logger=True)
 
-        self.log("valid_box2_confidence_loss", box2_confidence_loss, on_step=True, logger=True)
-        self.log("valid_box2_cx_loss", box2_cx_loss, on_step=True, logger=True)
-        self.log("valid_box2_cy_loss", box2_cy_loss, on_step=True, logger=True)
-        self.log("valid_box2_width_loss", box2_width_loss, on_step=True, logger=True)
-        self.log("valid_box2_height_loss", box2_height_loss, on_step=True, logger=True)
+        self.log("val_box2_confidence_loss", box2_confidence_loss, on_step=True, logger=True)
+        self.log("val_box2_cx_loss", box2_cx_loss, on_step=True, logger=True)
+        self.log("val_box2_cy_loss", box2_cy_loss, on_step=True, logger=True)
+        self.log("val_box2_width_loss", box2_width_loss, on_step=True, logger=True)
+        self.log("val_box2_height_loss", box2_height_loss, on_step=True, logger=True)
 
-        self.log("valid_classes_loss", classes_loss, on_step=True, logger=True)
+        self.log("val_classes_loss", classes_loss, on_step=True, logger=True)
 
         del x
         del y
@@ -174,7 +176,7 @@ class TrainingContainer(LightningModule):
 
         loss /= num_of_outputs
 
-        self.log("valid_loss", loss, on_epoch=True, logger=True)
+        self.log("val_loss", loss, on_epoch=True, logger=True)
 
         for _, item in log_dict.items():
             del item
