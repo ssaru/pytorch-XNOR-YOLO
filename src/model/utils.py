@@ -230,7 +230,7 @@ class BinarizedConvBlock(nn.Module):
         return x
 
 
-def get_boxes(pred_tensor: torch.Tensor, confidence_score: float = 0.3):        
+def get_boxes(pred_tensor: torch.Tensor, confidence_threshold: float = 0.3, nms_threshold: float = 0.6):
     predictions = []
 
     classes = torch.argmax(pred_tensor[:,:,:,11:], dim=3).float() + 1
@@ -246,14 +246,16 @@ def get_boxes(pred_tensor: torch.Tensor, confidence_score: float = 0.3):
         for b, y, x in zip(*indices):
             # 이미지를 벗어나는 box를 clipping해야함            
             scores1 = pred_tensor[b,y,x,0]
-            boxes1 = pred_tensor[b,y,x,1:5] # shape: (1, 4)            
-            boxes.append(boxes1)
-            scores.append(scores1)                                                                                 
+            if float(scores1) > confidence_threshold:
+                boxes1 = pred_tensor[b,y,x,1:5] # shape: (1, 4)            
+                boxes.append(boxes1)
+                scores.append(scores1)                                                                                 
             
-            scores2 = pred_tensor[b,y,x,5]            
-            boxes2 = pred_tensor[b,y,x,6:10] # shape: (1, 4)                        
-            boxes.append(boxes2)                                    
-            scores.append(scores2)            
+            scores2 = pred_tensor[b,y,x,5]           
+            if float(scores2) > confidence_threshold: 
+                boxes2 = pred_tensor[b,y,x,6:10] # shape: (1, 4)                        
+                boxes.append(boxes2)                                    
+                scores.append(scores2)            
             
                 
         if (len(boxes) == 0) or (len(scores) == 0):
@@ -262,10 +264,10 @@ def get_boxes(pred_tensor: torch.Tensor, confidence_score: float = 0.3):
         boxes = torch.stack(boxes)
         scores = torch.stack(scores)        
         
-        indices, scores = soft_nms(dets=boxes, box_scores=scores, thresh=confidence_score)
+        indices, scores = soft_nms(dets=boxes, box_scores=scores, thresh=nms_threshold)
 
         for idx in indices:        
-            if scores[idx] < confidence_score:
+            if scores[idx] < nms_threshold:
                 continue
 
             pred_confidence = float(scores[idx])

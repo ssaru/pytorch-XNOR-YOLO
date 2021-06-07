@@ -28,7 +28,15 @@ def calc_obj_loss(output: torch.Tensor, target: torch.Tensor) -> dict:
 def calc_nonobj_loss(output: torch.Tensor, target: torch.Tensor) -> dict:
     return {
         "confidence1_loss": torch.sum(torch.pow(output[:, :, :, 0] - target[:, :, :, 0], 2)),
+        "box1_cx_loss": torch.sum(torch.pow(output[:, :, :, 1] - target[:, :, :, 1], 2)),
+        "box1_cy_loss": torch.sum(torch.pow(output[:, :, :, 2] - target[:, :, :, 2], 2)),
+        "box1_width_loss": torch.sum(torch.pow(output[:, :, :, 3] - torch.sqrt(target[:, :, :, 3]), 2)),
+        "box1_height_loss": torch.sum(torch.pow(output[:, :, :, 4] - torch.sqrt(target[:, :, :, 4]), 2)),
         "confidence2_loss": torch.sum(torch.pow(output[:, :, :, 5] - target[:, :, :, 0], 2)),
+        "box2_cx_loss": torch.sum(torch.pow(output[:, :, :, 6] - target[:, :, :, 1], 2)),
+        "box2_cy_loss": torch.sum(torch.pow(output[:, :, :, 7] - target[:, :, :, 2], 2)),
+        "box2_width_loss": torch.sum(torch.pow(output[:, :, :, 8] - torch.sqrt(target[:, :, :, 3]), 2)),
+        "box2_height_loss": torch.sum(torch.pow(output[:, :, :, 9] - torch.sqrt(target[:, :, :, 4]), 2)),
         "classes_loss": torch.sum(torch.pow(output[:, :, :, 10:] - target[:, :, :, 10:], 2)),
     }
 
@@ -77,14 +85,27 @@ def calc_yolo_loss(pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image
         + obj_loss_dict["box2_height_loss"]
     )
     obj_loss *= lambda_obj
-    nonobj_loss = lambda_noobj * nonobj_loss_dict["classes_loss"]
+    
+    nonobj_loss = (
+        nonobj_loss_dict["box1_cx_loss"]
+        + nonobj_loss_dict["box1_cy_loss"]
+        + nonobj_loss_dict["box1_width_loss"]
+        + nonobj_loss_dict["box1_height_loss"]
+        + nonobj_loss_dict["box2_cx_loss"]
+        + nonobj_loss_dict["box2_cy_loss"]
+        + nonobj_loss_dict["box2_width_loss"]
+        + nonobj_loss_dict["box2_height_loss"])
+    nonobj_loss *= lambda_noobj
 
     total_loss = (
         obj_loss
         + nonobj_loss
         + obj_loss_dict["classes_loss"]
+        + nonobj_loss_dict["classes_loss"]
         + obj_loss_dict["confidence1_loss"]
         + obj_loss_dict["confidence2_loss"]
+        + nonobj_loss_dict["confidence1_loss"]
+        + nonobj_loss_dict["confidence2_loss"]
     )
 
     batch_size = pred_tensor.shape[0]

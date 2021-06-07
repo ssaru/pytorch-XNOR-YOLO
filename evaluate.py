@@ -3,8 +3,8 @@ Usage:
     main.py evaluate [options] [--config=<model config path>] [--weights-filepath=<weights file path>] [--image-path=<image path>]
     main.py evaluate (-h | --help)
 Options:
-    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/YOLO/config.yaml] [type: path]
-    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/YOLO/Yolo_epoch=17-train_loss=21.46-val_loss=0.00.ckpt] [type: path]    
+    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/TINY-XNOR-YOLO/config.yaml] [type: path]
+    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/TINY-XNOR-YOLO/XnorNetYolo_epoch=75-train_loss=8.51-val_loss=0.00.ckpt] [type: path]    
             
     -h --help  Show this.
 """

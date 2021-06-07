@@ -93,7 +93,8 @@ class XnorNetYolo(nn.Module):
             b, y, x = box1_idx
             pred_tensor[b, y, x, 1:5] = box1
             pred_tensor[b, y, x, 7:11] = box2
-        prediction = get_boxes(pred_tensor=pred_tensor, confidence_score=self._confidence)
+            
+        prediction = get_boxes(pred_tensor=pred_tensor, confidence_threshold= 0.3, nms_threshold = self._confidence)
 
         return prediction
 
