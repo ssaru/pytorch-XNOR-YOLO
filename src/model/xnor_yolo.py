@@ -71,14 +71,11 @@ class XnorNetYolo(nn.Module):
         x = x.view(-1, 7, 7, 30)
 
         x = torch.sigmoid(x)
-        # x[:, :, :, 0] = torch.sigmoid(x[:, :, :, 0])
-        # x[:, :, :, 5] = torch.sigmoid(x[:, :, :, 0])
-        # x[:, :, :, 10:] = torch.sigmoid(x[:, :, :, 10:])
 
         return x
 
     def loss(self, pred_tensor: torch.Tensor, target_tensor: torch.Tensor, image_sizes: Tuple = (448, 448)):
-        return self.loss_fn(pred_tensor=pred_tensor, target_tensor=target_tensor, image_sizes=image_sizes)
+        return self.loss_fn(pred_tensor=pred_tensor, target_tensor=target_tensor)
 
     def inference(self, x: torch.Tensor, image_size: Tuple):
         # single inference

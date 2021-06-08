@@ -1,15 +1,15 @@
 hyperparameter:
     # image 수: 5717
-    batch_size: &batch_size 64
+    batch_size: &batch_size 32
     steps_per_epoch: &steps_per_epoch 1429
-    lr: &lr 5e-3
-    optimizer: &optimizer Adam
-    gamma: &gamma 0.3
-    #momentum: &momentum 0.9
-    epoch: &max_epochs 135
+    lr: &lr 1e-3
+    optimizer: &optimizer SGD
+    gamma: &gamma 0.1
+    momentum: &momentum 0.9
+    epoch: &max_epochs 1250
 
-project: &project TINY_XNOR_YOLO
-experiments: &title 1.tiny-xnor-yolo(3090)
+project: &project TINY_XNOR_YOLO(Changed_Loss)
+experiments: &title 1.tiny-xnor-yolo(1080Ti)
 
 dataloader:
     type: DataLoader
@@ -18,18 +18,17 @@ dataloader:
         batch_size: *batch_size
 
 scheduler:
-    type: OneCycleLR
+    type: MultiStepLR
     params:
-        max_lr: 0.01
-        steps_per_epoch: *steps_per_epoch
-        epochs: *max_epochs
-        pct_start: 0.1
-        anneal_strategy: cos
+        gamma: *gamma
+        milestones: [1, 75, 105]
 
 optimizer:
     type: *optimizer
     params:
         lr: *lr
+        momentum: *momentum
+        weight_decay: 0.0005
 
 runner:
     type: TrainingContainer
@@ -64,6 +63,8 @@ runner:
         name: *title
         project_name: *project
         output_dir: output/runs
+
+        
 #scheduler: # ExponentialLR in paper
 # type: ExponentialLR
 # parmas:
