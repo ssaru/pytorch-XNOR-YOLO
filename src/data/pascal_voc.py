@@ -101,7 +101,6 @@ class VOCDataset(Dataset):
         img = cv2.imread(path)
         boxes = self.boxes[idx].clone()  # [n, 4]
         labels = self.labels[idx].clone()  # [n,]
-
         if self.is_train:
             img, boxes = self.random_flip(img, boxes)
             img, boxes = self.random_scale(img, boxes)

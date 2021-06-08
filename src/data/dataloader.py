@@ -22,7 +22,6 @@ def get_data_loaders(config: DictConfig) -> Tuple[DataLoader, DataLoader]:
     # args["image_set"] = "train"
     # args["transforms"] = Yolofy(resize_sizes=(config.model.params.width, config.model.params.height))
     train_dataset = load_class(module=Dataset, name=config.data.dataset.type, args=args)
-
     train_dataloader = DataLoader(
         dataset=train_dataset,
         batch_size=config.dataloader.params.batch_size,
@@ -41,6 +40,6 @@ def get_data_loaders(config: DictConfig) -> Tuple[DataLoader, DataLoader]:
         batch_size=config.dataloader.params.batch_size,
         num_workers=config.dataloader.params.num_workers,
         drop_last=False,
-        shuffle=True,
+        shuffle=False,
     )
     return train_dataloader, test_dataloader

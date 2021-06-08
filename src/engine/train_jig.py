@@ -57,8 +57,9 @@ class TrainingContainer(LightningModule):
             elif epoch >= 105:
                 lr = 0.0001
 
-            # for param_group in optimizer.param_groups:
-            #     param_group['lr'] = lr
+            for param_group in optimizer.param_groups:
+                param_group["lr"] = lr
+            print(f"change learning rate: {lr}")
             return lr
 
         opt_args = dict(self.config.optimizer.params)
