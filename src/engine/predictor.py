@@ -3,8 +3,10 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 import torchvision
+import numpy as np
 from omegaconf import DictConfig
 from PIL import Image
+import numpy as np
 
 from src import model as Net
 from src.utils import load_class
@@ -15,7 +17,7 @@ def build_model(model_conf: DictConfig):
 
 
 class Predictor(torch.nn.Module):
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, config: DictConfig, conf_thresh=0.1, prob_thresh=0.1, nms_thresh=0.35) -> None:
         """Model Container for predict
 
         Args:
@@ -28,29 +30,20 @@ class Predictor(torch.nn.Module):
         print(f"====================")
         self.model: nn.Module = build_model(model_conf=config.model)
         self.resize_size = (448,448)
+        self.mean = np.array([122.67891434, 116.66876762, 104.00698793], dtype=np.float32)
+        self.conf_thresh=conf_thresh
+        self.prob_thresh=prob_thresh
+        self.nms_thresh=nms_thresh
 
     def forward(self, x):        
-        predictions = self.model.inference(x, image_size=self.image_size)
-        
-        for idx, pred in enumerate(predictions):
-            score, bbox, cls_id = pred
-            xmin, ymin, xmax, ymax = bbox            
-            
-            norm_xmin = xmin / self.resize_size[0]
-            norm_ymin = ymin / self.resize_size[1]
-            norm_xmax = xmax / self.resize_size[0]
-            norm_ymax = ymax / self.resize_size[1]
-
-            recon_xmin = norm_xmin * self.image_size[0]
-            recon_ymin = norm_ymin * self.image_size[1]
-            recon_xmax = norm_xmax * self.image_size[0]
-            recon_ymax = norm_ymax * self.image_size[1]
-
-            predictions[idx][1] = [recon_xmin, recon_ymin, recon_xmax, recon_ymax]
-
-        return predictions
+        return self.model.inference(x, image_size=self.image_size, conf_thresh=self.conf_thresh, prob_thresh=self.prob_thresh, nms_thresh=self.nms_thresh)
 
     def preprocess(self, image: Image):
         self.image_size = image.size
-        image = image.resize(self.resize_size)        
-        return torchvision.transforms.ToTensor()(image).unsqueeze(0)
+        image = image.resize(self.resize_size)
+        image = np.array(image)
+        image = (image - self.mean) / 255.0
+        # image = Image.fromarray(image)
+        image = torchvision.transforms.ToTensor()(image).unsqueeze(0)
+        # image = torch.div((image - self.mean), 255)
+        return image
