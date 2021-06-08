@@ -50,17 +50,31 @@ class TrainingContainer(LightningModule):
 
             if epoch == 0:
                 lr = init_lr + (base_lr - init_lr) * math.pow(burnin_base, burnin_exp)
+                print(f"change learning rate: {lr}")
+                for param_group in optimizer.param_groups:
+                    param_group["lr"] = lr
+                return lr
+
             elif epoch == 1:
                 lr = base_lr
+                print(f"change learning rate: {lr}")
+                for param_group in optimizer.param_groups:
+                    param_group["lr"] = lr
+                return lr
+
             elif epoch == 75:
                 lr = 0.001
+                print(f"change learning rate: {lr}")
+                for param_group in optimizer.param_groups:
+                    param_group["lr"] = lr
+                return lr
+
             elif epoch >= 105:
                 lr = 0.0001
-
-            for param_group in optimizer.param_groups:
-                param_group["lr"] = lr
-            print(f"change learning rate: {lr}")
-            return lr
+                print(f"change learning rate: {lr}")
+                for param_group in optimizer.param_groups:
+                    param_group["lr"] = lr
+                return lr
 
         opt_args = dict(self.config.optimizer.params)
         opt_args.update({"params": self.model.parameters(), "lr": self.lr})
