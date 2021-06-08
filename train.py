@@ -49,14 +49,21 @@ def train(hparams: dict):
 
     train_dataloader, test_dataloader = get_data_loaders(config=config)
 
+    # dataset = train_dataloader.dataset
+    # for img, target in dataset:
+    #     print(f"shape of target: {target.shape}")
+    #     exit()
+
     model: nn.Module = build_model(model_conf=config.model)
     model.summary()
 
-    training_container: pl.LightningModule = TrainingContainer(model=model, config=config)
+    training_container: pl.LightningModule = TrainingContainer(
+        model=model, config=config, len_dataloader=len(train_dataloader)
+    )
 
     checkpoint_callback = get_checkpoint_callback(log_dir=log_dir, config=config)
-    wandb_logger = get_wandb_logger(log_dir=log_dir, config=config)
-    wandb_logger.watch(model, log="gradients", log_freq=100)
+    # wandb_logger = get_wandb_logger(log_dir=log_dir, config=config)
+    # wandb_logger.watch(model, log="gradients", log_freq=100)
 
     lr_logger = LearningRateMonitor()
     early_stop_callback = get_early_stopper(early_stopping_config=config.runner.earlystopping.params)
@@ -73,7 +80,7 @@ def train(hparams: dict):
         fast_dev_run=False,
         gpus=config.runner.trainer.params.gpus,
         amp_level="O2",
-        logger=wandb_logger,
+        # logger=wandb_logger,
         callbacks=[early_stop_callback, lr_logger],
         checkpoint_callback=checkpoint_callback,
         max_epochs=config.runner.trainer.params.max_epochs,

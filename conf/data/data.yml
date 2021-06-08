@@ -1,14 +1,18 @@
 data:
   dataset:
-    type: VOCDetection
+    type: VOCDataset #VOCDetection
     params:
-      root: data/
-      year: "2012"
-      image_set: null
-      download: true
-      transform: null
-      target_transform: null
-      transforms: null
+      is_train: true
+      image_dir: data/VOCdevkit/VOC_allimages/
+      label_txt: [data/VOCdevkit/voc2007.txt] #, data/VOCdevkit/voc2012.txt
+
+      # root: data/
+      # year: "2012"
+      # image_set: null
+      # download: true
+      # transform: null
+      # target_transform: null
+      # transforms: null
 
   augmentation:
     blur:

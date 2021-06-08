@@ -1,20 +1,20 @@
 hyperparameter:
     # image 수: 5717
-    batch_size: &batch_size 20
+    batch_size: &batch_size 32
     #steps_per_epoch: &steps_per_epoch 1429
     lr: &lr 5e-3
-    optimizer: &optimizer Adam
+    optimizer: &optimizer SGD
     gamma: &gamma 0.3
-    #momentum: &momentum 0.9
-    epoch: &max_epochs 40000
+    momentum: &momentum 0.9
+    epoch: &max_epochs 1250
 
 project: &project YOLO
-experiments: &title 1.yolo(DGX)
+experiments: &title 1.yolo(3090)-loss-test
 
 dataloader:
     type: DataLoader
     params:
-        num_workers: 24
+        num_workers: 10
         batch_size: *batch_size
 
 scheduler:
@@ -27,8 +27,8 @@ optimizer:
     type: *optimizer
     params:
         lr: *lr
-        #momentum: *momentum
-        #weight_decay: 0.0005
+        momentum: *momentum
+        weight_decay: 0.0005
 
 runner:
     type: TrainingContainer

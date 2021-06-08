@@ -150,7 +150,7 @@ model:
 
       linear:
         - in_feature: 12544
-          out_feature: 1519
+          out_feature: 1470 #1519
           bias: true
           batch_norm: false
           activation: null

@@ -6,7 +6,7 @@ from omegaconf import DictConfig
 from torchsummary import summary as torch_summary
 
 from src.data.pascal_voc import VOC2012
-from src.model.detection_loss import yolo_loss, yolotensor_to_xyxyabs
+from src.model.detection_loss import Loss, yolo_loss, yolotensor_to_xyxyabs
 from src.model.utils import (
     BinarizedConvBlock,
     BinarizedLinearBlock,
@@ -54,7 +54,7 @@ class XnorNetYolo(nn.Module):
 
         logger.info(f"build loss layers")
         self.softmax = nn.Softmax(dim=1)
-        self.loss_fn = yolo_loss
+        self.loss_fn = Loss()
 
     def forward(self, x):
         if hasattr(self, "conv_layers"):
@@ -68,11 +68,12 @@ class XnorNetYolo(nn.Module):
             for linear_layer in self.linear_layers:
                 x = linear_layer(x)
 
-        x = x.view(-1, 7, 7, 31)
+        x = x.view(-1, 7, 7, 30)
 
-        x[:, :, :, 0] = torch.sigmoid(x[:, :, :, 0])
-        x[:, :, :, 5] = torch.sigmoid(x[:, :, :, 0])
-        x[:, :, :, 10:] = torch.sigmoid(x[:, :, :, 10:])
+        x = torch.sigmoid(x)
+        # x[:, :, :, 0] = torch.sigmoid(x[:, :, :, 0])
+        # x[:, :, :, 5] = torch.sigmoid(x[:, :, :, 0])
+        # x[:, :, :, 10:] = torch.sigmoid(x[:, :, :, 10:])
 
         return x
 
@@ -80,21 +81,21 @@ class XnorNetYolo(nn.Module):
         return self.loss_fn(pred_tensor=pred_tensor, target_tensor=target_tensor, image_sizes=image_sizes)
 
     def inference(self, x: torch.Tensor, image_size: Tuple):
-        # single inference        
+        # single inference
         pred_tensor = self(x)
 
         # width, height power of 2
         pred_tensor[:, :, :, 3:5] = torch.pow(pred_tensor[:, :, :, 3:5], 2)
         pred_tensor[:, :, :, 9:11] = torch.pow(pred_tensor[:, :, :, 9:11], 2)
 
-        pred_boxes = yolotensor_to_xyxyabs(yolo_coord_output=pred_tensor, image_sizes=image_size)        
+        pred_boxes = yolotensor_to_xyxyabs(yolo_coord_output=pred_tensor, image_sizes=image_size)
         for boxes_info in pred_boxes:
             box1_idx, box1, box2 = boxes_info
             b, y, x = box1_idx
             pred_tensor[b, y, x, 1:5] = box1
             pred_tensor[b, y, x, 7:11] = box2
-            
-        prediction = get_boxes(pred_tensor=pred_tensor, confidence_threshold= 0.3, nms_threshold = self._confidence)
+
+        prediction = get_boxes(pred_tensor=pred_tensor, confidence_threshold=0.3, nms_threshold=self._confidence)
 
         return prediction
 

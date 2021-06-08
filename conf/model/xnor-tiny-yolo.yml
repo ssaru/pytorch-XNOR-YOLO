@@ -160,7 +160,7 @@ model:
           dropout: null
 
         - in_feature: 4096
-          out_feature: 1519
+          out_feature: 1470 #1519
           bias: true
           batch_norm: false
           activation:

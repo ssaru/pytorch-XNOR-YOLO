@@ -11,16 +11,17 @@ from src.utils import load_class, make_logger
 
 
 def get_data_loaders(config: DictConfig) -> Tuple[DataLoader, DataLoader]:
+    from src import data as Dataset
+
     current_func_name = sys._getframe().f_code.co_name
     logger = make_logger(name=str(current_func_name))
 
     args = dict(config.data.dataset.params)
 
-    args["image_set"] = "train"
-
     # TODO. Resize를 잘못함...
-    args["transforms"] = Yolofy(resize_sizes=(config.model.params.width, config.model.params.height))
-    train_dataset = load_class(module=torchvision.datasets, name=config.data.dataset.type, args=args)
+    # args["image_set"] = "train"
+    # args["transforms"] = Yolofy(resize_sizes=(config.model.params.width, config.model.params.height))
+    train_dataset = load_class(module=Dataset, name=config.data.dataset.type, args=args)
 
     train_dataloader = DataLoader(
         dataset=train_dataset,
@@ -30,10 +31,11 @@ def get_data_loaders(config: DictConfig) -> Tuple[DataLoader, DataLoader]:
         shuffle=True,
     )
 
-    args["image_set"] = "val"
-    args["download"] = False
+    # args["image_set"] = "val"
+    # args["download"] = False
+    args["label_txt"] = "data/VOCdevkit/voc2007test.txt"
 
-    test_dataset = load_class(module=torchvision.datasets, name=config.data.dataset.type, args=args)
+    test_dataset = load_class(module=Dataset, name=config.data.dataset.type, args=args)
     test_dataloader = DataLoader(
         dataset=test_dataset,
         batch_size=config.dataloader.params.batch_size,
