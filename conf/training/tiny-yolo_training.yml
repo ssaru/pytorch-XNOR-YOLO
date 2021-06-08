@@ -4,7 +4,7 @@ hyperparameter:
   steps_per_epoch: &steps_per_epoch 1429
   lr: &lr 1e-3
   optimizer: &optimizer SGD
-  gamma: &gamma 0.3
+  gamma: &gamma 0.1
   momentum: &momentum 0.9
   epoch: &max_epochs 1250
 
@@ -18,17 +18,10 @@ dataloader:
     batch_size: *batch_size
 
 scheduler:
-  type: LambdaLR
+  type: MultiStepLR
   params:
-    lr_lambda: null
-
-#   type: OneCycleLR
-#   params:
-#     max_lr: 0.01
-#     steps_per_epoch: *steps_per_epoch
-#     epochs: *max_epochs
-#     pct_start: 0.3
-#     anneal_strategy: cos
+    gamma: *gamma
+    milestones: [1, 75, 105]
 
 optimizer:
   type: *optimizer
@@ -70,6 +63,8 @@ runner:
     name: *title
     project_name: *project
     output_dir: output/runs
+
+    
 #scheduler:
 # type: StepLR
 # params:

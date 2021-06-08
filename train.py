@@ -53,11 +53,6 @@ def train(hparams: dict):
     train_dataloader, test_dataloader = get_data_loaders(config=config)
     dataset = test_dataloader
 
-    # dataset = train_dataloader.dataset
-    # for img, target in dataset:
-    #     print(f"shape of target: {target.shape}")
-    #     exit()
-
     model: nn.Module = build_model(model_conf=config.model)
     model.summary()
 
@@ -97,7 +92,7 @@ def train(hparams: dict):
         overfit_batches=0.0,
         precision=32,
         limit_train_batches=1.0,
-        limit_val_batches=0.1,
+        limit_val_batches=1.0,
         # TODO. SimpleProfiler는 ddp spawn에서 문제가 발생 TextIO Error
         # profiler=profiler,
     )

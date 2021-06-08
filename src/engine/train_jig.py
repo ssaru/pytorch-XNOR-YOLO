@@ -37,52 +37,11 @@ class TrainingContainer(LightningModule):
         return self.model(x)
 
     def configure_optimizers(self):
-        def update_lr(epoch, optimizer, burnin_exp=4.0):
-            init_lr = 0.01
-            base_lr = 0.01
-            optim_params_keys = optimizer.state[optimizer.param_groups[0]["params"][-1]].keys()
-
-            current_step = 0
-            if "step" in optim_params_keys:
-                current_step = optimizer.state[optimizer.param_groups[0]["params"][-1]]["step"]
-
-            burnin_base = current_step / float(self.len_dataloader - 1)
-
-            if epoch == 0:
-                lr = init_lr + (base_lr - init_lr) * math.pow(burnin_base, burnin_exp)
-                print(f"change learning rate: {lr}")
-                for param_group in optimizer.param_groups:
-                    param_group["lr"] = lr
-                return lr
-
-            elif epoch == 1:
-                lr = base_lr
-                print(f"change learning rate: {lr}")
-                for param_group in optimizer.param_groups:
-                    param_group["lr"] = lr
-                return lr
-
-            elif epoch == 75:
-                lr = 0.001
-                print(f"change learning rate: {lr}")
-                for param_group in optimizer.param_groups:
-                    param_group["lr"] = lr
-                return lr
-
-            elif epoch >= 105:
-                lr = 0.0001
-                print(f"change learning rate: {lr}")
-                for param_group in optimizer.param_groups:
-                    param_group["lr"] = lr
-                return lr
-
         opt_args = dict(self.config.optimizer.params)
         opt_args.update({"params": self.model.parameters(), "lr": self.lr})
         opt = load_class(module=optim, name=self.config.optimizer.type, args=opt_args)
 
         scheduler_args = dict(self.config.scheduler.params)
-        scheduler_args["lr_lambda"] = [functools.partial(update_lr, optimizer=opt, burnin_exp=4.0)]
-
         scheduler_args.update({"optimizer": opt})
         scheduler = load_class(
             module=optim.lr_scheduler,
