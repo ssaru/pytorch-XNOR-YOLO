@@ -21,6 +21,7 @@ import torch.nn as nn
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor
+from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.profiler import AdvancedProfiler, SimpleProfiler
 
 from src.data.dataloader import get_data_loaders
@@ -61,7 +62,9 @@ def train(hparams: dict):
     )
 
     checkpoint_callback = get_checkpoint_callback(log_dir=log_dir, config=config)
-    wandb_logger = get_wandb_logger(log_dir=log_dir, config=config)
+
+    tb_logger = TensorBoardLogger(save_dir=log_dir, name=config.runner.experiments.name)
+    #wandb_logger = get_wandb_logger(log_dir=log_dir, config=config)
     # wandb_logger.watch(model, log="gradients", log_freq=100)
 
     lr_logger = LearningRateMonitor()
@@ -79,7 +82,8 @@ def train(hparams: dict):
         fast_dev_run=False,
         gpus=config.runner.trainer.params.gpus,
         amp_level="O2",
-        logger=wandb_logger,
+        logger=tb_logger,
+        #logger=wandb_logger,
         callbacks=[lr_logger],  # early_stop_callback
         checkpoint_callback=checkpoint_callback,
         max_epochs=config.runner.trainer.params.max_epochs,
