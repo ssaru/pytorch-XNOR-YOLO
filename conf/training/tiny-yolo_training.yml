@@ -3,10 +3,10 @@ hyperparameter:
   batch_size: &batch_size 8 #32
   steps_per_epoch: &steps_per_epoch 1429
   lr: &lr 1e-3
-  optimizer: &optimizer SGD
+  optimizer: &optimizer Adam
   gamma: &gamma 0.1
   momentum: &momentum 0.9
-  epoch: &max_epochs 1250
+  epoch: &max_epochs 27000
 
 project: &project TINY_YOLO(Changed_Loss)
 experiments: &title 1.tiny-yolo(DGX)
@@ -27,8 +27,8 @@ optimizer:
   type: *optimizer
   params:
     lr: *lr
-    momentum: *momentum
-    weight_decay: 0.0005
+    # momentum: *momentum
+    # weight_decay: 0.0005
 
 runner:
   type: TrainingContainer
@@ -54,17 +54,15 @@ runner:
   earlystopping:
     type: EarlyStopping
     params:
-      monitor: val_loss
-      mode: min
-      patience: 30
+      monitor: mAP
+      mode: max
+      patience: 1000
       verbose: True
 
   experiments:
     name: *title
     project_name: *project
     output_dir: output/runs
-
-    
 #scheduler:
 # type: StepLR
 # params:
