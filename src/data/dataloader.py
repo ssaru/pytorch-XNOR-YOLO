@@ -34,11 +34,15 @@ def get_data_loaders(config: DictConfig) -> Tuple[DataLoader, DataLoader]:
     # args["download"] = False
     args["label_txt"] = "data/VOCdevkit/voc2007test.txt"
 
-    test_dataset = load_class(module=Dataset, name=config.data.dataset.type, args=args)
+    args = {"root": "data/",
+            "year": "2012",
+            "image_set": "val",
+            "download": False}
+    test_dataset = load_class(module=Dataset, name="VOCDetection", args=args)
     test_dataloader = DataLoader(
         dataset=test_dataset,
-        batch_size=config.dataloader.params.batch_size,
-        num_workers=config.dataloader.params.num_workers,
+        batch_size=1,
+        num_workers=1,
         drop_last=False,
         shuffle=False,
     )

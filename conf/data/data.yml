@@ -4,7 +4,7 @@ data:
     params:
       is_train: true
       image_dir: data/VOCdevkit/VOC_allimages/
-      label_txt: [data/VOCdevkit/voc2007.txt] #, data/VOCdevkit/voc2012.txt
+      label_txt: [data/VOCdevkit/voc2007.txt, data/VOCdevkit/voc2012.txt]
 
       # root: data/
       # year: "2012"

@@ -4,32 +4,24 @@ Usage:
     main.py predict (-h | --help)
 Options:
     --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/TINY-XNOR-YOLO/config.yaml] [type: path]
-    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/TINY-XNOR-YOLO/XnorNetYolo_epoch=42-train_loss=6.33-val_loss=4.66.ckpt] [type: path]
-    --image-path <image path> Path to image filepath for inference  [default: data/VOCdevkit/VOC2012/JPEGImages/2012_004326.jpg]
+    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/TINY-XNOR-YOLO/XnorNetYolo_epoch=191-train_loss=6.22-val_loss=3.01.ckpt] [type: path]
+    --image-path <image path> Path to image filepath for inference  [default: data/VOCdevkit/VOC2007/JPEGImages/000007.jpg]
             
     -h --help  Show this.
 """
-# 2007_000027.jpg
-# 2012_003028.jpg
-# 2012_004273.jpg
-# 2012_004331.jpg
-# 2012_004326.jpg
+# VOC2007
+# 000007.jpg
 #
-#    YOLO
-#    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/YOLO/config.yaml] [type: path]
-#    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/YOLO/Yolo_epoch=05-train_loss=7.16-val_loss=0.00.ckpt] [type: path]
-#
-#    XNOR-YOLO
-#    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/XNOR-YOLO/config.yaml] [type: path]
-#    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/XNOR-YOLO/XnorNetYolo_epoch=07-train_loss=10.80-val_loss=0.00.ckpt] [type: path]    
+# VOC2012
+# 2009_002008.jpg, 2012_001533.jpg, 2007_000032.jpg, 2007_000027.jpg
+# 2012_003028.jpg, 2012_004273.jpg, 2012_004331.jpg, 2012_004326.jpg
 #
 #    TINY-YOLO
-#    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/TINY-YOLO/config.yaml] [type: path]
-#    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/TINY-YOLO/Yolo_epoch=21-train_loss=4.31-val_loss=2.57.ckpt] [type: path]
+#    Yolo_epoch=59-train_loss=4.24-val_loss=2.39.ckpt
+#    Yolo_epoch=90-train_loss=3.86-val_loss=2.25.ckpt
 #
 #    TINY-XNOR-YOLO
-#    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/TINY-XNOR-YOLO/config.yaml] [type: path]
-#    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/TINY-XNOR-YOLO/XnorNetYolo_epoch=42-train_loss=6.33-val_loss=4.66.ckpt] [type: path]
+#    XnorNetYolo_epoch=191-train_loss=6.22-val_loss=3.01.ckpt
 
 import pytorch_lightning
 import torch
@@ -51,7 +43,7 @@ def infer(hparams: dict):
     config_list = ["--config"]
     config: DictConfig = get_config(hparams=hparams, options=config_list)
     
-    predictor = Predictor(config=config, conf_thresh=0.05, prob_thresh=0.001, nms_thresh=0.1)
+    predictor = Predictor(config=config, conf_thresh=0.01, prob_thresh=0.01, nms_thresh=0.5)
         
     if weight_filepath:
         predictor.load_state_dict(torch.load(weight_filepath, map_location="cpu")["state_dict"])
@@ -63,7 +55,7 @@ def infer(hparams: dict):
     with torch.no_grad():
         image: torch.Tensor = predictor.preprocess(pil_image)
     boxes_detected, class_names_detected, probs_detected = predictor(image)
-    
+    print(class_names_detected)
     draw = ImageDraw.Draw(pil_image)    
     for idx, box in enumerate(boxes_detected):
         xmin, ymin, xmax, ymax = box

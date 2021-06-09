@@ -56,7 +56,8 @@ class VOCDataset(Dataset):
         self.B = num_bboxes
         self.C = num_classes
 
-        mean_rgb = [122.67891434, 116.66876762, 104.00698793]
+        #mean_rgb = [122.67891434, 116.66876762, 104.00698793]
+        mean_rgb = [0., 0., 0.]
         self.mean = np.array(mean_rgb, dtype=np.float32)
 
         self.to_tensor = transforms.ToTensor()

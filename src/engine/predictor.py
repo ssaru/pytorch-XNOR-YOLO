@@ -30,7 +30,8 @@ class Predictor(torch.nn.Module):
         print(f"====================")
         self.model: nn.Module = build_model(model_conf=config.model)
         self.resize_size = (448,448)
-        self.mean = np.array([122.67891434, 116.66876762, 104.00698793], dtype=np.float32)
+        #self.mean = np.array([122.67891434, 116.66876762, 104.00698793], dtype=np.float32)
+        self.mean = np.array([0., 0., 0.], dtype=np.float32)
         self.conf_thresh=conf_thresh
         self.prob_thresh=prob_thresh
         self.nms_thresh=nms_thresh
