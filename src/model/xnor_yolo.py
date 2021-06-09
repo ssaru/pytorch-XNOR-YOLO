@@ -102,7 +102,6 @@ class XnorNetYolo(nn.Module):
 
         # Apply non maximum supression for boxes of each class.
         boxes_normalized, class_labels, probs = [], [], []
-        print(f"class labels all : {class_labels_all}")
         for class_label in range(len(self.class_name_list)):
             mask = (class_labels_all == class_label)
             if torch.sum(mask) == 0:
@@ -220,8 +219,7 @@ class XnorNetYolo(nn.Module):
             labels = torch.LongTensor(0)
             confidences = torch.FloatTensor(0)
             class_scores = torch.FloatTensor(0)
-        print(f"labels: {labels}")
-        print(f"class scores: {class_scores}")
+        
         return boxes, labels, confidences, class_scores
 
     def nms(self, boxes, scores):

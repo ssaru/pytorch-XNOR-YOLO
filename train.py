@@ -95,8 +95,8 @@ def train(hparams: dict):
         num_sanity_val_steps=0,
         overfit_batches=0.0,
         precision=32,
-        limit_train_batches=1.0,
-        limit_val_batches=1.0,
+        limit_train_batches=0.001,
+        limit_val_batches=0.001,
         # TODO. SimpleProfiler는 ddp spawn에서 문제가 발생 TextIO Error
         # profiler=profiler,
     )
