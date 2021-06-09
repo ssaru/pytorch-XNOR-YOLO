@@ -1,12 +1,12 @@
 hyperparameter:
     # image 수: 5717
-    batch_size: &batch_size 32
+    batch_size: &batch_size 8
     steps_per_epoch: &steps_per_epoch 1429
-    lr: &lr 1e-3
+    lr: &lr 1e-4
     optimizer: &optimizer Adam
     gamma: &gamma 0.1
     # momentum: &momentum 0.9
-    epoch: &max_epochs 1250
+    epoch: &max_epochs 27000
 
 project: &project TINY_XNOR_YOLO(Changed_Loss)
 experiments: &title 1.tiny-xnor-yolo(1080Ti)
@@ -50,14 +50,14 @@ runner:
             overfit_batches: 0.0
             precision: 32
             profiler: true
-
-    earlystopping:
-        type: EarlyStopping
-        params:
-            monitor: mAP
-            mode: max
-            patience: 1000
-            verbose: True
+    #
+    #earlystopping:
+    #    type: EarlyStopping
+    #    params:
+    #        monitor: mAP
+    #        mode: max
+    #        patience: 1000
+    #        verbose: True
 
     experiments:
         name: *title

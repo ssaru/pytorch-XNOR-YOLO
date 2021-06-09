@@ -443,7 +443,11 @@ class Loss(nn.Module):
 
         # Class probability loss for the cells which contain objects.
         loss_class = F.mse_loss(class_pred, class_target, reduction="sum")
-
+        # print(f"loss_xy: {loss_xy}")
+        # print(f"loss_wh: {loss_wh}")
+        # print(f"loss_obj: {loss_obj}")
+        # print(f"loss_noobj: {loss_noobj}")
+        # print(f"loss_class: {loss_class}")
         # Total loss
         loss = self.lambda_coord * (loss_xy + loss_wh) + loss_obj + self.lambda_noobj * loss_noobj + loss_class
         loss = loss / float(batch_size)
