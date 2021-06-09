@@ -9,7 +9,7 @@ hyperparameter:
     epoch: &max_epochs 27000
 
 project: &project TINY_XNOR_YOLO(Changed_Loss)
-experiments: &title 1.tiny-xnor-yolo(1080Ti)
+experiments: &title 1.tiny-xnor-yolo(DGX)
 
 dataloader:
     type: DataLoader
