@@ -10,13 +10,16 @@ import psutil
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
+import torchvision
+from torchvision import transforms
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import LightningModule
 from pytorch_lightning.metrics.functional import accuracy
 from torch import optim
 from torch.optim.lr_scheduler import ExponentialLR, LambdaLR, ReduceLROnPlateau, StepLR
 
-from src.utils import load_class
+from src.engine.predictor import Predictor
+from src.utils import load_class, compute_mAP
 
 
 class TrainingContainer(LightningModule):
@@ -34,6 +37,8 @@ class TrainingContainer(LightningModule):
         self.lr = config.optimizer.params.lr
         self.image_sizes = (config.model.params.width, config.model.params.height)
         self.len_dataloader = len_dataloader
+
+        self.mean = np.array([0., 0., 0.], dtype=np.float32)
 
         self.conf_thresh = 0.001
         self.prob_thresh = 0.001
@@ -108,24 +113,28 @@ class TrainingContainer(LightningModule):
             self.mAP_targets[(filename, classes)].append([xmin, ymin, xmax, ymax])
         
         # Predicting...
+        x = transforms.ToPILImage()(x.squeeze())
         image = x.resize(self.image_sizes)
         image = np.array(image)
         image = (image - self.mean) / 255.0
-        image = torchvision.transforms.ToTensor()(image).unsqueeze(0)
-        with torch.no_grad():
-            input_image: torch.Tensor = predictor.preprocess(image)
-
-        boxes_detected, class_names_detected, probs_detected = self.model.inference(x, image_size=self.image_sizes, conf_thresh=self.conf_thresh, prob_thresh=self.prob_thresh, nms_thresh=self.nms_thresh)
+        image = torchvision.transforms.ToTensor()(image)
+        image = image.unsqueeze(0)
+        device = self.model.device
+        image = image.to(device)
+        boxes_detected, class_names_detected, probs_detected = self.model.inference(image, image_size=self.image_sizes, conf_thresh=self.conf_thresh, prob_thresh=self.prob_thresh, nms_thresh=self.nms_thresh)
         for box, class_name, prob in zip(boxes_detected, class_names_detected, probs_detected):        
             xmin, ymin, xmax, ymax = box            
-            self.mAP_preds[class_name].append([filename, prob, xmin, ymin, xmax, ymax])        
-        
+            self.mAP_preds[class_name].append([filename, prob, xmin, ymin, xmax, ymax])       
+
 
     def validation_epoch_end(self, validation_step_outputs):
         voc_class_names = self.model.class_name_list
-        mAP, aps = compute_mAP(self.preds, targets, class_names=voc_class_names)
-        self.log("mAP", mAP, on_step=True, logger=True)
+        mAP, aps = compute_mAP(self.mAP_preds, self.mAP_targets, class_names=voc_class_names)
+        self.log("mAP", mAP, on_epoch=True, logger=True)
 
         for key, value in aps.items():
-            self.log(key, value, on_step=True, logger=True)
+            self.log(key, value, on_epoch=True, logger=True)
+
+        self.mAP_targets = defaultdict(list)
+        self.mAP_preds = defaultdict(list)
         

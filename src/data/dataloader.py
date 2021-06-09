@@ -37,7 +37,8 @@ def get_data_loaders(config: DictConfig) -> Tuple[DataLoader, DataLoader]:
     args = {"root": "data/",
             "year": "2012",
             "image_set": "val",
-            "download": False}
+            "download": False,
+            "transform": torchvision.transforms.ToTensor()}
     test_dataset = load_class(module=Dataset, name="VOCDetection", args=args)
     test_dataloader = DataLoader(
         dataset=test_dataset,
