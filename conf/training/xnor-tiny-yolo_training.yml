@@ -1,7 +1,7 @@
 hyperparameter:
     # image 수: 5717
     batch_size: &batch_size 8
-    steps_per_epoch: &steps_per_epoch 1429
+    #steps_per_epoch: &steps_per_epoch 1429
     lr: &lr 1e-4
     optimizer: &optimizer Adam
     gamma: &gamma 0.1
@@ -14,7 +14,7 @@ experiments: &title 1.tiny-xnor-yolo(DGX)
 dataloader:
     type: DataLoader
     params:
-        num_workers: 48
+        num_workers: 24
         batch_size: *batch_size
 
 scheduler:

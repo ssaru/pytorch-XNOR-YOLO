@@ -11,7 +11,7 @@ from torch.utils.data import Dataset
 
 class VOC2012(object):
     def __init__(self):
-        self.label = {            
+        self.label = {
             0: "aeroplane",
             1: "bicycle",
             2: "bird",
@@ -56,8 +56,8 @@ class VOCDataset(Dataset):
         self.B = num_bboxes
         self.C = num_classes
 
-        #mean_rgb = [122.67891434, 116.66876762, 104.00698793]
-        mean_rgb = [0., 0., 0.]
+        # mean_rgb = [122.67891434, 116.66876762, 104.00698793]
+        mean_rgb = [0.0, 0.0, 0.0]
         self.mean = np.array(mean_rgb, dtype=np.float32)
 
         self.to_tensor = transforms.ToTensor()
@@ -99,8 +99,11 @@ class VOCDataset(Dataset):
     def __getitem__(self, idx):
         path = self.paths[idx]
         img = cv2.imread(path)
+        if img is None:
+            print(f"Image is None: path->{path}")
         boxes = self.boxes[idx].clone()  # [n, 4]
         labels = self.labels[idx].clone()  # [n,]
+        # try:
         if self.is_train:
             img, boxes = self.random_flip(img, boxes)
             img, boxes = self.random_scale(img, boxes)
@@ -112,10 +115,15 @@ class VOCDataset(Dataset):
 
             img, boxes, labels = self.random_shift(img, boxes, labels)
             img, boxes, labels = self.random_crop(img, boxes, labels)
+        # except Exception as e:
+        #    print(f"type of image: {type(img)}")
+        #    print(f"path: {path}")
 
         # For debug.
         debug_dir = "tmp/voc_tta"
         os.makedirs(debug_dir, exist_ok=True)
+        if img is None:
+            print(f"Image is None: Path-> {path}")
         img_show = img.copy()
         box_show = boxes.numpy().reshape(-1)
         n = len(box_show) // 4
@@ -177,7 +185,6 @@ class VOCDataset(Dataset):
     def random_flip(self, img, boxes):
         if random.random() < 0.5:
             return img, boxes
-
         h, w, _ = img.shape
 
         img = np.fliplr(img)
