@@ -52,9 +52,6 @@ def train(hparams: dict):
     log_dir.mkdir(parents=True, exist_ok=True)
 
     train_dataloader, test_dataloader = get_data_loaders(config=config)
-    # print(train_dataloader.dataset)
-    # print(test_dataloader.dataset)
-    # exit()
 
     model: nn.Module = build_model(model_conf=config.model)
     model.summary()
@@ -65,12 +62,13 @@ def train(hparams: dict):
 
     checkpoint_callback = get_checkpoint_callback(log_dir=log_dir, config=config)
 
-    # tb_logger = TensorBoardLogger(save_dir=log_dir, name=config.runner.experiments.name)
-    wandb_logger = get_wandb_logger(log_dir=log_dir, config=config)
-    wandb_logger.watch(model, log="gradients", log_freq=100)
+    # wandb_logger = get_wandb_logger(log_dir=log_dir, config=config)
+    # wandb_logger.watch(model, log="gradients", log_freq=100)
 
     lr_logger = LearningRateMonitor()
-    # early_stop_callback = get_early_stopper(early_stopping_config=config.runner.earlystopping.params)
+    early_stop_callback = get_early_stopper(
+        early_stopping_config=config.runner.earlystopping.params
+    )
 
     # TODO. SimpleProfiler는 ddp spawn에서 문제가 발생 TextIO Error
     # profiler = SimpleProfiler(output_filename="perf.txt")
@@ -85,8 +83,8 @@ def train(hparams: dict):
         gpus=config.runner.trainer.params.gpus,
         amp_level="O2",
         # logger=tb_logger,
-        logger=wandb_logger,
-        callbacks=[lr_logger],  # early_stop_callback
+        # logger=wandb_logger,
+        callbacks=[lr_logger, early_stop_callback],
         checkpoint_callback=checkpoint_callback,
         max_epochs=config.runner.trainer.params.max_epochs,
         weights_summary="top",

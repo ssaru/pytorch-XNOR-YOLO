@@ -51,12 +51,12 @@ runner:
       precision: 32
       profiler: true
   #
-  #earlystopping:
-  #  type: EarlyStopping
-  #    monitor: mAP
-  #    mode: max
-  #    patience: 1000
-  #    verbose: True
+  earlystopping:
+   type: EarlyStopping
+     monitor: valid_loss
+     mode: min
+     patience: 1000
+     verbose: True
 
   experiments:
     name: *title

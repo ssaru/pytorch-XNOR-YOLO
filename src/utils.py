@@ -33,7 +33,7 @@ logger = make_logger(name=__name__)
 
 
 def compute_average_precision(recall, precision):
-    """ Compute AP for one class.
+    """Compute AP for one class.
     Args:
         recall: (numpy array) recall values of precision-recall curve.
         precision: (numpy array) precision values of precision-recall curve.
@@ -48,17 +48,17 @@ def compute_average_precision(recall, precision):
     precision = np.concatenate(([0.0], precision, [0.0]))
 
     for i in range(precision.size - 1, 0, -1):
-        precision[i - 1] = max(precision[i -1], precision[i])
+        precision[i - 1] = max(precision[i - 1], precision[i])
 
-    ap = 0.0 # average precision (AUC of the precision-recall curve).
+    ap = 0.0  # average precision (AUC of the precision-recall curve).
     for i in range(precision.size - 1):
         ap += (recall[i + 1] - recall[i]) * precision[i + 1]
 
     return ap
 
 
-def compute_mAP(preds,targets,class_names,threshold=0.5):
-    """ Compute mAP metric.
+def compute_mAP(preds, targets, class_names, threshold=0.5):
+    """Compute mAP metric.
     Args:
         preds: (dict) {class_name_1: [[filename, prob, x1, y1, x2, y2], ...], class_name_2: [[], ...], ...}.
         targets: (dict) {(filename, class_name): [[x1, y1, x2, y2], ...], ...}.
@@ -70,25 +70,25 @@ def compute_mAP(preds,targets,class_names,threshold=0.5):
     # For mAP computation, you can find a great explaination below.
     # https://github.com/rafaelpadilla/Object-Detection-Metrics
 
-    aps = {} # list of average precisions (APs) for each class.
+    aps = {}  # list of average precisions (APs) for each class.
 
     for class_name in class_names:
-        class_preds = preds[class_name] # all predicted objects for this class.
+        class_preds = preds[class_name]  # all predicted objects for this class.
 
         if len(class_preds) == 0:
-            ap = 0.0 # if no box detected, assigne 0 for AP of this class.
+            ap = 0.0  # if no box detected, assigne 0 for AP of this class.
             # print('---class {} AP {}---'.format(class_name, ap))
             aps[class_name] = ap
             # break
 
-        image_fnames = [pred[0]  for pred in class_preds]
-        probs        = [pred[1]  for pred in class_preds]
-        boxes        = [pred[2:] for pred in class_preds]
+        image_fnames = [pred[0] for pred in class_preds]
+        probs = [pred[1] for pred in class_preds]
+        boxes = [pred[2:] for pred in class_preds]
 
         # Sort lists by probs.
         sorted_idxs = np.argsort(probs)[::-1]
         image_fnames = [image_fnames[i] for i in sorted_idxs]
-        boxes        = [boxes[i]        for i in sorted_idxs]
+        boxes = [boxes[i] for i in sorted_idxs]
 
         # Compute total number of ground-truth boxes. This is used to compute precision later.
         num_gt_boxes = 0
@@ -98,7 +98,7 @@ def compute_mAP(preds,targets,class_names,threshold=0.5):
 
         # Go through sorted lists, classifying each detection into TP or FP.
         num_detections = len(boxes)
-        tp = np.zeros(num_detections) # if detection `i` is TP, tp[i] = 1. Otherwise, tp[i] = 0.
+        tp = np.zeros(num_detections)  # if detection `i` is TP, tp[i] = 1. Otherwise, tp[i] = 0.
         fp = np.ones(num_detections)  # if detection `i` is FP, fp[i] = 1. Otherwise, fp[i] = 0.
 
         for det_idx, (filename, box) in enumerate(zip(image_fnames, boxes)):
@@ -124,14 +124,18 @@ def compute_mAP(preds,targets,class_names,threshold=0.5):
                         tp[det_idx] = 1.0
                         fp[det_idx] = 0.0
 
-                        boxes_gt.remove(box_gt) # each ground-truth box can be assigned for only one detected box.
+                        boxes_gt.remove(
+                            box_gt
+                        )  # each ground-truth box can be assigned for only one detected box.
                         if len(boxes_gt) == 0:
-                            del targets[(filename, class_name)] # remove empty element from the dictionary.
+                            del targets[
+                                (filename, class_name)
+                            ]  # remove empty element from the dictionary.
 
                         break
 
             else:
-                pass # this detection is FP.
+                pass  # this detection is FP.
 
         # Compute AP from `tp` and `fp`.
         tp_cumsum = np.cumsum(tp)
@@ -143,13 +147,14 @@ def compute_mAP(preds,targets,class_names,threshold=0.5):
 
         ap = compute_average_precision(recall, precision)
         # print('---class {} AP {}---'.format(class_name, ap))
-        aps[class_name] = ap        
+        aps[class_name] = ap
 
     # Compute mAP by averaging APs for all classes.
     mAP = np.mean(np.array(list(aps.values())))
     # print('---mAP {}---'.format(mAP))
 
     return mAP, aps
+
 
 def prod(iterable):
     return reduce(operator.mul, iterable, 1)
@@ -219,7 +224,9 @@ def get_log_dir(config: DictConfig) -> Path:
     current_func_name = sys._getframe().f_code.co_name
     logger.debug(f"{current_func_name} : config -> {config}")
 
-    root_dir = Path(config.runner.experiments.output_dir) / Path(config.runner.experiments.project_name)
+    root_dir = Path(config.runner.experiments.output_dir) / Path(
+        config.runner.experiments.project_name
+    )
     next_version = get_next_version(root_dir)
     run_dir = root_dir.joinpath(next_version)
 
@@ -237,11 +244,11 @@ def get_checkpoint_callback(log_dir: Path, config: DictConfig) -> Union[Callback
     checkpoint_path = log_dir.joinpath(checkpoint_prefix + checkpoint_suffix)
     checkpoint_callback = ModelCheckpoint(
         filepath=checkpoint_path,
-        period=1000,
-        # save_top_k=5,
+        # period=1000,
+        save_top_k=5,
         save_weights_only=False,
-        # monitor="mAP",
-        # mode="max",
+        monitor="valid_loss",
+        mode="min",
     )
 
     return checkpoint_callback
