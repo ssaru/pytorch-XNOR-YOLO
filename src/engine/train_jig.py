@@ -101,7 +101,7 @@ class TrainingContainer(LightningModule):
         _, loss = self.shared_step(x, y)
         self.log("valid_loss", loss, on_step=True)
 
-        return {"valid_loss", loss}
+        return {"valid_loss": loss}
 
     def validation_epoch_end(self, validation_step_outputs):
         loss = 0
