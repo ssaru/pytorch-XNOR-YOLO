@@ -107,7 +107,7 @@ class TrainingContainer(LightningModule):
         loss = 0
         num_of_outputs = len(validation_step_outputs)
         for log_dict in validation_step_outputs:
-            loss += log_dict["loss"]
+            loss += log_dict["valid_loss"]
 
         loss /= num_of_outputs
         self.log("valid_loss", loss, on_epoch=True)
