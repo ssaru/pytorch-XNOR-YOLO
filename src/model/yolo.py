@@ -34,7 +34,7 @@ class Yolo(nn.Module):
         self._channels: int = model_config.params.channels
 
         self.input_shape: tuple = (self._channels, self._height, self._width)
-        self.in_channels: int = self._channels
+        self.in_channels: int = self._channels        
 
         self.S = 7
         self.B = 2
@@ -53,7 +53,7 @@ class Yolo(nn.Module):
             )
 
         logger.info(f"build loss layers")
-        self.softmax = nn.Softmax(dim=1)
+        self.softmax = nn.Softmax(dim=0)
         self.loss_fn = Loss()
 
     def forward(self, x):
@@ -167,6 +167,12 @@ class Yolo(nn.Module):
             confidences: (tensor) objectness confidences for each detected box, sized [n_boxes,].
             class_scores: (tensor) scores for most likely class for each detected box, sized [n_boxes,].
         """
+        import numpy as np
+
+        def softmax(x):
+            e_x = torch.exp(x - torch.max(x))
+            return e_x / torch.sum(e_x)
+
         S, B, C = self.S, self.B, self.C
         boxes, labels, confidences, class_scores = [], [], [], []
 
@@ -179,15 +185,23 @@ class Yolo(nn.Module):
 
         # TBM, further optimization may be possible by replacing the following for-loops with tensor operations.
         for i in range(S): # for x-dimension.
-            for j in range(S): # for y-dimension.
-                class_score, class_label = torch.max(pred_tensor[j, i, 5*B:], 0)
+            for j in range(S): # for y-dimension.                
+                class_tensor = pred_tensor[j, i, 5*B:]
+                mean = torch.mean(class_tensor)
+                max_val, min_val = torch.max(class_tensor), torch.min(class_tensor)
+                class_tensor = (class_tensor - mean) / (max_val - min_val)
+                
+                #class_score, class_label = torch.max(pred_tensor[j, i, 5*B:], 0)
+                class_score, class_label = torch.max(class_tensor, 0)
+                test = pred_tensor[j, i, 5*B:]                
 
                 for b in range(B):
                     conf = pred_tensor[j, i, 5*b + 4]
                     prob = conf * class_score
+
                     if float(prob) < self.prob_thresh:                        
                         continue
-
+                    
                     # Compute box corner (x1, y1, x2, y2) from tensor.
                     box = pred_tensor[j, i, 5*b : 5*b + 4]
                     x0y0_normalized = torch.FloatTensor([i, j]) * cell_size # cell left-top corner. Normalized from 0.0 to 1.0 w.r.t. image width/height.
@@ -201,7 +215,7 @@ class Yolo(nn.Module):
                     boxes.append(box_xyxy)
                     labels.append(class_label)
                     confidences.append(conf)
-                    class_scores.append(class_score)
+                    class_scores.append(class_score)                
 
         if len(boxes) > 0:
             boxes = torch.stack(boxes, 0) # [n_boxes, 4]

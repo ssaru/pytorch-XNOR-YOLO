@@ -185,7 +185,13 @@ class XnorNetYolo(nn.Module):
         # TBM, further optimization may be possible by replacing the following for-loops with tensor operations.
         for i in range(S): # for x-dimension.
             for j in range(S): # for y-dimension.
-                class_score, class_label = torch.max(pred_tensor[j, i, 5*B:], 0)
+                class_tensor = pred_tensor[j, i, 5*B:]
+                mean = torch.mean(class_tensor)
+                max_val, min_val = torch.max(class_tensor), torch.min(class_tensor)
+                class_tensor = (class_tensor - mean) / (max_val - min_val)
+                
+                #class_score, class_label = torch.max(pred_tensor[j, i, 5*B:], 0)
+                class_score, class_label = torch.max(class_tensor, 0)
 
                 for b in range(B):
                     conf = pred_tensor[j, i, 5*b + 4]

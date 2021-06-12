@@ -3,9 +3,9 @@ Usage:
     main.py predict [options] [--config=<model config path>] [--weights-filepath=<weights file path>] [--image-path=<image path>]
     main.py predict (-h | --help)
 Options:
-    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/TINY-XNOR-YOLO/config.yaml] [type: path]
-    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/TINY-XNOR-YOLO/XnorNetYolo_epoch=191-train_loss=6.22-val_loss=3.01.ckpt] [type: path]
-    --image-path <image path> Path to image filepath for inference  [default: data/VOCdevkit/VOC2007/JPEGImages/000007.jpg]
+    --config <model config path>  Path to YAML file for model configuration  [default: pretrained_model/20210613/tiny-yolo-adam/config.yaml] [type: path]
+    --weights-filepath <weights file path>  Path to weights file for model  [default: pretrained_model/20210613/tiny-yolo-adam/Yolo_epoch=158-train_loss=2.19-val_loss=0.00.ckpt] [type: path]
+    --image-path <image path> Path to image filepath for inference  [default: data/VOCdevkit/VOC2012/JPEGImages/2009_002008.jpg]
             
     -h --help  Show this.
 """
@@ -17,11 +17,10 @@ Options:
 # 2012_003028.jpg, 2012_004273.jpg, 2012_004331.jpg, 2012_004326.jpg
 #
 #    TINY-YOLO
-#    Yolo_epoch=59-train_loss=4.24-val_loss=2.39.ckpt
-#    Yolo_epoch=90-train_loss=3.86-val_loss=2.25.ckpt
+#    Yolo_epoch=158-train_loss=2.19-val_loss=0.00.ckpt
 #
 #    TINY-XNOR-YOLO
-#    XnorNetYolo_epoch=191-train_loss=6.22-val_loss=3.01.ckpt
+#    XnorNetYolo_epoch=294-train_loss=2.57-val_loss=0.00.ckpt
 
 import pytorch_lightning
 import torch
@@ -43,7 +42,7 @@ def infer(hparams: dict):
     config_list = ["--config"]
     config: DictConfig = get_config(hparams=hparams, options=config_list)
     
-    predictor = Predictor(config=config, conf_thresh=0.01, prob_thresh=0.01, nms_thresh=0.5)
+    predictor = Predictor(config=config, conf_thresh=0.1, prob_thresh=0.1, nms_thresh=0.3)
         
     if weight_filepath:
         predictor.load_state_dict(torch.load(weight_filepath, map_location="cpu")["state_dict"])
